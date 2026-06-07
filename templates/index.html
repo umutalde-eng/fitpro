@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Train Hard. Stay Strong.{% endblock %}
+{% block body_class %}home{% endblock %}
+
+{% block content %}
+
+<!-- ─── HERO ─────────────────────────────────────────────────── -->
+<section class="fz-hero">
+  <!-- BG athlete photo -->
+  <div class="fz-hero-bg"></div>
+  <div class="fz-hero-overlay"></div>
+
+  <!-- Floating stats pills (right side) -->
+  <div class="fz-stats-float">
+    <div class="fz-stat-pill">
+      <div class="fz-stat-icon" style="color:#ff2d9b;">🔥</div>
+      <div><strong>450+</strong><span>Calories brûlées</span></div>
+    </div>
+    <div class="fz-stat-pill">
+      <div class="fz-stat-icon" style="color:#b96fff;">👥</div>
+      <div><strong>12K+</strong><span>Membres actifs</span></div>
+    </div>
+    <div class="fz-stat-pill">
+      <div class="fz-stat-icon" style="color:#ffb800;">🏆</div>
+      <div><strong>25+</strong><span>Programmes créés</span></div>
+    </div>
+  </div>
+
+  <!-- Hero content -->
+  <div class="fz-hero-content">
+    <div class="fz-hero-badge">Programme 4 semaines · Personnalisé IA</div>
+    <h1 class="fz-hero-title">
+      TRAIN HARD<br>
+      <span class="fz-gradient-text">STAY STRONG</span>
+    </h1>
+    <p class="fz-hero-sub">Transforme ton corps, améliore ta force et vis une vie plus saine. Ton programme sur mesure en 2 minutes.</p>
+    <div class="fz-hero-cta">
+      <a href="/onboarding" class="fz-btn-primary">GET STARTED</a>
+      <button onclick="openModal('loginModal')" class="fz-btn-outline">LEARN MORE ▶</button>
+    </div>
+
+    <!-- Feature pills row -->
+    <div class="fz-features-row">
+      <div class="fz-feat-pill">
+        <span>🏋️</span>
+        <div><strong>WORKOUT</strong><p>Programmes sur mesure</p></div>
+      </div>
+      <div class="fz-feat-pill">
+        <span>⚡</span>
+        <div><strong>EXPERT</strong><p>Coaching guidé</p></div>
+      </div>
+      <div class="fz-feat-pill">
+        <span>🥗</span>
+        <div><strong>NUTRITION</strong><p>Plans alimentaires</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Huge background text -->
+  <div class="fz-bg-text">FITNESS</div>
+</section>
+
+<!-- ─── PROGRAMS ──────────────────────────────────────────────── -->
+<section class="fz-section" style="background:#0a0a0f;">
+  <div class="fz-container">
+    <div class="fz-section-header">
+      <span class="fz-label" style="color:#ff2d9b;">NOS PROGRAMMES</span>
+      <h2>WORKOUT <span class="fz-gradient-text">PROGRAMS</span></h2>
+      <p>3 objectifs distincts, chacun optimisé pour des résultats précis</p>
+    </div>
+    <div class="fz-programs-grid">
+
+      <div class="fz-program-card">
+        <div class="fz-program-bg" style="background-image:url('https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=700&q=80');"></div>
+        <div class="fz-program-overlay" style="background:linear-gradient(180deg,transparent 20%,rgba(255,45,155,.7) 100%);"></div>
+        <div class="fz-program-content">
+          <span class="fz-program-tag" style="background:rgba(255,45,155,.2);border-color:rgba(255,45,155,.5);color:#ff2d9b;">🔥 HIIT · CARDIO</span>
+          <h3>PERTE DE POIDS</h3>
+          <p>Brûle les graisses avec des séances HIIT intenses et du cardio progressif.</p>
+          <a href="/onboarding" class="fz-btn-pink" style="margin-top:16px;">Commencer →</a>
+        </div>
+      </div>
+
+      <div class="fz-program-card fz-program-featured">
+        <div class="fz-program-bg" style="background-image:url('https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=700&q=80');"></div>
+        <div class="fz-program-overlay" style="background:linear-gradient(180deg,transparent 20%,rgba(139,47,255,.8) 100%);"></div>
+        <span class="fz-featured-badge">⭐ POPULAIRE</span>
+        <div class="fz-program-content">
+          <span class="fz-program-tag" style="background:rgba(139,47,255,.2);border-color:rgba(139,47,255,.5);color:#b96fff;">💪 FORCE · MASSE</span>
+          <h3>PRISE DE MASSE</h3>
+          <p>Développe ta musculature avec la surcharge progressive au poids du corps.</p>
+          <a href="/onboarding" class="fz-btn-purple" style="margin-top:16px;">Commencer →</a>
+        </div>
+      </div>
+
+      <div class="fz-program-card">
+        <div class="fz-program-bg" style="background-image:url('https://images.unsplash.com/photo-1518611012118-696072aa579a?w=700&q=80');"></div>
+        <div class="fz-program-overlay" style="background:linear-gradient(180deg,transparent 20%,rgba(0,200,150,.7) 100%);"></div>
+        <div class="fz-program-content">
+          <span class="fz-program-tag" style="background:rgba(0,200,150,.15);border-color:rgba(0,200,150,.4);color:#00e5a0;">✨ ÉQUILIBRE</span>
+          <h3>TONIFICATION</h3>
+          <p>L'équilibre parfait entre cardio et renforcement pour un corps dessiné.</p>
+          <a href="/onboarding" class="fz-btn-green" style="margin-top:16px;">Commencer →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── WORKOUT VIDEOS (mockup section) ──────────────────────── -->
+<section class="fz-section" style="background:#050508;">
+  <div class="fz-container">
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:60px;align-items:center;">
+      <div>
+        <span class="fz-label" style="color:#b96fff;">VIDÉOS</span>
+        <h2 style="font-size:2.2rem;font-weight:900;font-style:italic;line-height:1.1;margin:10px 0 16px;">WORKOUT<br><span class="fz-gradient-text-purple">VIDEOS</span></h2>
+        <p style="color:#888;font-size:.9rem;line-height:1.6;margin-bottom:24px;">Suis tes séances avec nos coaches professionnels, n'importe où.</p>
+        <a href="/onboarding" class="fz-btn-outline-sm">VOIR TOUT →</a>
+      </div>
+      <div class="fz-video-area">
+        <!-- Main video mockup -->
+        <div class="fz-video-main">
+          <div class="fz-video-thumb" style="background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=80');">
+            <div class="fz-video-overlay"></div>
+            <button class="fz-play-btn">▶</button>
+            <div class="fz-video-bar">
+              <span>02:45</span>
+              <div class="fz-progress-track"><div class="fz-progress-fill" style="width:18%;"></div></div>
+              <span>15:30</span>
+            </div>
+          </div>
+        </div>
+        <!-- Video list -->
+        <div class="fz-video-list">
+          <div class="fz-video-item">
+            <div class="fz-vthumb" style="background-image:url('https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=200&q=80');"></div>
+            <div><strong>FULL BODY HIIT</strong><p>20 MIN · ADVANCED</p></div>
+          </div>
+          <div class="fz-video-item">
+            <div class="fz-vthumb" style="background-image:url('https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=200&q=80');"></div>
+            <div><strong>UPPER BODY STRENGTH</strong><p>18 MIN · INTERMEDIATE</p></div>
+          </div>
+          <div class="fz-video-item">
+            <div class="fz-vthumb" style="background-image:url('https://images.unsplash.com/photo-1518611012118-696072aa579a?w=200&q=80');"></div>
+            <div><strong>CORE BURN</strong><p>15 MIN · BEGINNER</p></div>
+          </div>
+          <div class="fz-video-item">
+            <div class="fz-vthumb" style="background-image:url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=200&q=80');"></div>
+            <div><strong>FAT BURN WORKOUT</strong><p>25 MIN · ADVANCED</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── JOIN CTA ───────────────────────────────────────────────── -->
+<section class="fz-join-section">
+  <div class="fz-join-photo"></div>
+  <div class="fz-join-content">
+    <span class="fz-label" style="color:#ff2d9b;">JOIN FITPRO TODAY</span>
+    <h2 style="font-size:2.8rem;font-weight:900;font-style:italic;line-height:1.1;margin:12px 0 16px;">YOUR FITNESS<br>JOURNEY<br><span class="fz-gradient-text">STARTS HERE</span></h2>
+    <p style="color:#aaa;margin-bottom:32px;line-height:1.6;">Accède à des programmes personnalisés, un coaching guidé et une communauté motivante.</p>
+    <div class="fz-email-row">
+      <input type="email" placeholder="Ton adresse email" class="fz-email-input">
+      <a href="/onboarding" class="fz-btn-primary">JOIN NOW</a>
+    </div>
+    <div class="fz-trust-row">
+      <div class="fz-trust-item"><span>📅</span><strong>7 JOURS</strong><p>Essai gratuit</p></div>
+      <div class="fz-trust-item"><span>💳</span><strong>SANS CB</strong><p>Pour commencer</p></div>
+      <div class="fz-trust-item"><span>✕</span><strong>RÉSILIABLE</strong><p>À tout moment</p></div>
+      <div class="fz-trust-item"><span>🎧</span><strong>SUPPORT</strong><p>24/7</p></div>
+    </div>
+  </div>
+</section>
+
+<footer style="background:#030306;border-top:1px solid rgba(255,45,155,.15);padding:24px;text-align:center;color:#555;font-size:.85rem;">
+  ⚡ FitPro · Tous droits réservés 2025 · <a href="/pricing" style="color:#ff2d9b;">Tarifs</a>
+</footer>
+
+{% endblock %}

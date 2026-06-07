@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Nutrition{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Nutrition Hero -->
+  <div style="position:relative;height:200px;overflow:hidden;background:#030306;">
+    <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1547592180-85f173990554?w=1400&q=80');background-size:cover;background-position:center;filter:brightness(.18) saturate(1.2);"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,3,6,.97) 0%,rgba(0,229,160,.08) 100%);"></div>
+    <div style="position:relative;z-index:1;height:100%;display:flex;align-items:flex-end;padding:0 40px 32px;max-width:1100px;margin:0 auto;">
+      <div>
+        <div style="font-size:.7rem;font-weight:800;color:#00e5a0;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">MON PLAN</div>
+        <h1 style="font-size:2.2rem;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;">PLAN <span style="background:linear-gradient(90deg,#00e5a0,#00c6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">NUTRITIONNEL</span></h1>
+        <p id="nutritionSubtitle" style="color:#666;font-size:.85rem;margin-top:4px;">Chargement...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-container">
+    <div id="nutritionContent"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadNutrition() {
+  const r = await fetch('/api/get-program');
+  if (!r.ok) { window.location.href = '/onboarding'; return; }
+  const data = await r.json();
+  const n = data.nutrition;
+  document.getElementById('nutritionSubtitle').textContent = n.name;
+
+  let html = `
+  <div class="card mb-24" style="margin-bottom:24px;border-left:3px solid #ff2d9b;">
+    <div style="font-size:.7rem;font-weight:800;color:#ff2d9b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">OBJECTIF CALORIQUE</div>
+    <p style="color:#e0e0e0;font-weight:800;font-size:1.4rem;font-style:italic;">${n.calories_target}</p>
+  </div>
+
+  <div class="macro-grid" style="margin-bottom:24px;">
+    <div class="macro-card" style="border-top:3px solid #8b2fff;">
+      <div class="macro-pct" style="color:#b96fff;">${n.macro_split.proteines}</div>
+      <div class="macro-label">Protéines</div>
+    </div>
+    <div class="macro-card" style="border-top:3px solid #ff2d9b;">
+      <div class="macro-pct" style="color:#ff2d9b;">${n.macro_split.glucides}</div>
+      <div class="macro-label">Glucides</div>
+    </div>
+    <div class="macro-card" style="border-top:3px solid #00e5a0;">
+      <div class="macro-pct" style="color:#00e5a0;">${n.macro_split.lipides}</div>
+      <div class="macro-label">Lipides</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;border-left:3px solid #00e5a0;">
+    <div style="font-size:.7rem;font-weight:800;color:#00e5a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">✅ PRINCIPES CLÉS</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+    ${n.principles.map(p => `
+      <div style="display:flex;align-items:flex-start;gap:12px;font-size:.9rem;">
+        <span style="color:#ff2d9b;flex-shrink:0;margin-top:2px;font-weight:800;">→</span>
+        <span style="color:#ccc;">${p}</span>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div style="font-size:.7rem;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">🍽️ IDÉES REPAS</div>
+    <div class="meal-tabs" id="mealTabs">`;
+
+  const meals = Object.keys(n.meal_plan);
+  const mealIcons = { 'Petit-déjeuner': '☀️', 'Déjeuner': '🌤️', 'Dîner': '🌙', 'Collation': '🍎' };
+  meals.forEach((m, i) => {
+    html += `<div class="meal-tab${i === 0 ? ' active' : ''}" onclick="selectMeal(this,'meal-${i}')">${mealIcons[m] || '🍽️'} ${m}</div>`;
+  });
+
+  html += `</div><div id="mealContent">`;
+
+  meals.forEach((m, i) => {
+    html += `<div class="meal-options" id="meal-${i}" style="${i !== 0 ? 'display:none' : ''}">`;
+    n.meal_plan[m].forEach((option, j) => {
+      html += `<div class="meal-option">
+        <div class="meal-num">${j+1}</div>
+        <div style="font-size:.9rem;line-height:1.5;color:#ccc;">${option}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `</div></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="card" style="border-left:3px solid rgba(255,107,107,.6);">
+      <div style="font-size:.7rem;font-weight:800;color:#ff6584;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">❌ À ÉVITER</div>
+      ${n.foods_to_avoid.map(f => `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.875rem;color:var(--muted);">${f}</div>`).join('')}
+    </div>
+    <div class="card" style="border-left:3px solid rgba(0,229,160,.5);">
+      <div style="font-size:.7rem;font-weight:800;color:#00e5a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">✅ À PRIVILÉGIER</div>
+      ${n.foods_to_favor.map(f => `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.875rem;color:var(--muted);">${f}</div>`).join('')}
+    </div>
+  </div>`;
+
+  document.getElementById('nutritionContent').innerHTML = html;
+}
+
+function selectMeal(el, targetId) {
+  document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#mealContent > div').forEach(d => d.style.display = 'none');
+  document.getElementById(targetId).style.display = 'flex';
+}
+
+loadNutrition();
+</script>
+{% endblock %}

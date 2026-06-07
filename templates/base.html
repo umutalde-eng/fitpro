@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FitPro{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% block navbar %}
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">⚡ FitPro</a>
+    <div class="nav-links">
+      {% if session.get('user_email') %}
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/program" class="nav-link">Programme</a>
+        <a href="/nutrition" class="nav-link">Nutrition</a>
+        <a href="/coaches" class="nav-link" style="color:#ff2d9b;position:relative;">Coaches <span style="position:absolute;top:-4px;right:-6px;width:7px;height:7px;background:#ff2d9b;border-radius:50%;animation:pulse-dot 1.5s infinite;"></span></a>
+        <a href="/progress" class="nav-link">Progrès</a>
+        <button onclick="logout()" class="btn-ghost">Déconnexion</button>
+      {% else %}
+        <a href="/pricing" class="nav-link">Tarifs</a>
+        <button onclick="openModal('loginModal')" class="btn-ghost">Connexion</button>
+        <a href="/onboarding" class="btn-primary">Commencer</a>
+      {% endif %}
+    </div>
+    <button class="nav-toggle" onclick="toggleMenu()">☰</button>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}{% endblock %}
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('loginModal')"></div>
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    <h2>Connexion</h2>
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required placeholder="ton@email.com">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="loginPassword" required placeholder="••••••">
+      </div>
+      <div id="loginError" class="error-msg hidden"></div>
+      <button type="submit" class="btn-primary full-width">Se connecter</button>
+    </form>
+    <p class="modal-footer">Pas encore inscrit ? <a href="/onboarding">Créer un compte →</a></p>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

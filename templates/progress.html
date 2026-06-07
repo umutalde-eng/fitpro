@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Mes Progrès{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Progress Hero -->
+  <div style="position:relative;height:200px;overflow:hidden;background:#030306;">
+    <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1400&q=80');background-size:cover;background-position:center 40%;filter:brightness(.18) saturate(1.2);"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,3,6,.97) 0%,rgba(139,47,255,.1) 100%);"></div>
+    <div style="position:relative;z-index:1;height:100%;display:flex;align-items:flex-end;justify-content:space-between;padding:0 40px 32px;max-width:1100px;margin:0 auto;">
+      <div>
+        <div style="font-size:.7rem;font-weight:800;color:#8b2fff;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">MES STATS</div>
+        <h1 style="font-size:2.2rem;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;">MES <span style="background:linear-gradient(90deg,#8b2fff,#ff2d9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">PROGRÈS</span></h1>
+      </div>
+      <button onclick="openModal('addProgressModal')" class="fz-btn-primary" style="align-self:flex-end;">+ Ajouter</button>
+    </div>
+  </div>
+
+  <div class="page-container">
+
+    <div class="stats-grid" style="margin-bottom:28px;">
+      <div class="stat-card"><div class="stat-icon">🏋️</div><span class="stat-value" id="pTotalSessions">–</span><div class="stat-label">Séances totales</div></div>
+      <div class="stat-card"><div class="stat-icon">🔥</div><span class="stat-value" id="pStreak">–</span><div class="stat-label">Streak</div></div>
+      <div class="stat-card"><div class="stat-icon">⚖️</div><span class="stat-value" id="pWeightChange">–</span><div class="stat-label">Évolution poids (kg)</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><span class="stat-value" id="pCurrentWeek">–</span><div class="stat-label">Semaine programme</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div style="font-size:.7rem;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">⚖️ ÉVOLUTION DU POIDS</div>
+      <canvas id="weightChart" height="120" style="display:none;"></canvas>
+      <div id="noWeightData" style="text-align:center;padding:48px;color:var(--muted);">
+        <div style="font-size:2.5rem;margin-bottom:12px;">📈</div>
+        <p style="margin-bottom:16px;">Aucune entrée de poids pour l'instant.</p>
+        <button onclick="openModal('addProgressModal')" class="btn-outline">Ajouter mon poids</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:.7rem;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">📅 HISTORIQUE DES SÉANCES</div>
+      <div id="sessionHistory" style="text-align:center;padding:48px;color:var(--muted);">
+        <div style="font-size:2.5rem;margin-bottom:12px;">🏋️</div>
+        <p style="margin-bottom:16px;">Aucune séance enregistrée.</p>
+        <a href="/program" class="btn-outline" style="display:inline-block;">Voir mon programme →</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add Progress Modal -->
+<div id="addProgressModal" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('addProgressModal')"></div>
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('addProgressModal')">✕</button>
+    <h2 style="font-style:italic;text-transform:uppercase;">Enregistrer</h2>
+    <div class="form-group">
+      <label>Poids actuel (kg)</label>
+      <input type="number" id="apWeight" step="0.1" placeholder="Ex: 74.5">
+    </div>
+    <div class="form-group">
+      <label>Note / ressenti</label>
+      <textarea id="apNote" rows="3" placeholder="Comment tu te sens aujourd'hui ?"></textarea>
+    </div>
+    <button onclick="addProgress()" class="btn-primary full-width">Enregistrer 💪</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+let weightChart = null;
+
+async function loadProgress() {
+  const r = await fetch('/api/get-stats');
+  const stats = await r.json();
+  document.getElementById('pTotalSessions').textContent = stats.total_sessions;
+  document.getElementById('pStreak').textContent = stats.streak;
+  document.getElementById('pWeightChange').textContent = stats.weight_change > 0 ? '+' + stats.weight_change : stats.weight_change || '–';
+  document.getElementById('pCurrentWeek').textContent = 'S' + stats.current_week;
+}
+
+async function addProgress() {
+  const weight = document.getElementById('apWeight').value;
+  const note = document.getElementById('apNote').value;
+  if (!weight) return showToast('Entre ton poids', 'error');
+
+  await fetch('/api/save-progress', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({weight: parseFloat(weight), note})
+  });
+  showToast('Progrès enregistré ! 💪', 'success');
+  closeModal('addProgressModal');
+  loadProgress();
+  updateChart(weight);
+}
+
+const weights = [];
+const labels = [];
+
+function updateChart(newWeight) {
+  const now = new Date();
+  labels.push(now.toLocaleDateString('fr-FR', {day:'numeric', month:'short'}));
+  weights.push(parseFloat(newWeight));
+
+  document.getElementById('noWeightData').style.display = 'none';
+  document.getElementById('weightChart').style.display = 'block';
+
+  if (weightChart) {
+    weightChart.data.labels = labels;
+    weightChart.data.datasets[0].data = weights;
+    weightChart.update();
+  } else {
+    const ctx = document.getElementById('weightChart').getContext('2d');
+    weightChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Poids (kg)',
+          data: weights,
+          borderColor: '#ff2d9b',
+          backgroundColor: 'rgba(255,45,155,.08)',
+          borderWidth: 2,
+          pointBackgroundColor: '#ff2d9b',
+          pointRadius: 5,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#555' } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#555' } }
+        }
+      }
+    });
+  }
+}
+
+loadProgress();
+</script>
+{% endblock %}

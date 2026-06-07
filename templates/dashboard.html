@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="page-container">
+
+    <!-- Welcome banner -->
+    <div id="welcomeBanner" class="hidden" style="background:linear-gradient(135deg,rgba(255,45,155,.08),rgba(139,47,255,.06));border:1px solid rgba(255,45,155,.2);border-radius:var(--radius);padding:20px 28px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
+      <span style="font-size:2rem;">🎉</span>
+      <div>
+        <strong style="font-size:1rem;">Bienvenue {{ user.name }} !</strong>
+        <p style="color:var(--muted);font-size:.875rem;margin-top:2px;">Ton programme est prêt. La semaine 1 est débloquée gratuitement !</p>
+      </div>
+      <button onclick="this.closest('#welcomeBanner').style.display='none'" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
+    </div>
+
+    <!-- Dash Hero Banner -->
+    <div class="dash-hero">
+      <div class="dash-hero-overlay"></div>
+      <div class="dash-hero-content">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <h2 style="font-style:italic;text-transform:uppercase;font-size:1.6rem;font-weight:900;">BONJOUR {{ user.name }} 👋</h2>
+          {% if user.subscription == 'premium' %}
+            <span style="background:linear-gradient(135deg,#ff2d9b,#8b2fff);color:#fff;padding:4px 14px;border-radius:50px;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">⭐ PREMIUM</span>
+          {% endif %}
+        </div>
+        {% if user.profile %}
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <span style="background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:600;">
+            {% if user.profile.goal == 'perte_poids' %}🔥 Perte de poids
+            {% elif user.profile.goal == 'prise_masse' %}💪 Prise de masse
+            {% else %}✨ Tonification{% endif %}
+          </span>
+          <span style="background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:600;">
+            🏠 {{ user.profile.equipment or 'Maison' }}
+          </span>
+          <span style="background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:600;">
+            📅 {{ user.profile.days_per_week or '3' }}j/sem
+          </span>
+        </div>
+        {% else %}
+        <a href="/onboarding" class="btn-primary" style="font-size:.875rem;padding:10px 22px;">Compléter mon profil →</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🏋️</div>
+        <span class="stat-value" id="statSessions">–</span>
+        <div class="stat-label">Séances complétées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <span class="stat-value" id="statStreak">–</span>
+        <div class="stat-label">Jours consécutifs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <span class="stat-value" id="statWeek">–</span>
+        <div class="stat-label">Semaine actuelle</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚖️</div>
+        <span class="stat-value" id="statWeight">–</span>
+        <div class="stat-label">Évolution poids (kg)</div>
+      </div>
+    </div>
+
+    <!-- Mon Coach -->
+    {% if user.selected_coach %}
+    {% set coach_data = {
+      'marcus': {'name':'Marcus','role':'Coach Entraînement','color':'#ff2d9b','icon':'⚡','photo':'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=400&q=80'},
+      'sarah':  {'name':'Sarah', 'role':'Coach Nutrition',   'color':'#00e5a0','icon':'🥗','photo':'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80'},
+      'karim':  {'name':'Karim', 'role':'Coach Mental',      'color':'#8b2fff','icon':'🧠','photo':'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80'}
+    } %}
+    {% set c = coach_data[user.selected_coach] %}
+    <div style="grid-column:1/-1;position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid rgba({{ '255,45,155' if user.selected_coach=='marcus' else ('0,229,160' if user.selected_coach=='sarah' else '139,47,255') }},.3);background:rgba({{ '255,45,155' if user.selected_coach=='marcus' else ('0,229,160' if user.selected_coach=='sarah' else '139,47,255') }},.04);">
+      <div style="position:absolute;right:0;top:0;bottom:0;width:200px;background-image:url('{{ c.photo }}');background-size:cover;background-position:center top;"></div>
+      <div style="position:absolute;right:0;top:0;bottom:0;width:260px;background:linear-gradient(90deg,rgba(3,3,6,1) 0%,rgba(3,3,6,.3) 100%);"></div>
+      <div style="position:relative;z-index:1;padding:24px 28px;display:flex;align-items:center;gap:20px;">
+        <img src="{{ c.photo }}" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid {{ c.color }};flex-shrink:0;">
+        <div style="flex:1;">
+          <div style="font-size:.65rem;font-weight:800;color:{{ c.color }};letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;">{{ c.icon }} Mon Coach</div>
+          <div style="font-size:1.2rem;font-weight:900;font-style:italic;text-transform:uppercase;">{{ c.name }}</div>
+          <div style="font-size:.75rem;color:#666;margin-top:2px;">{{ c.role }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2);padding:5px 12px;border-radius:50px;font-size:.7rem;color:#00e5a0;font-weight:700;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#00e5a0;animation:pulse-dot 1.5s infinite;display:inline-block;"></span> En ligne
+        </div>
+        <a href="/coaches" style="background:linear-gradient(135deg,{{ c.color }},{{ '#8b2fff' if user.selected_coach!='karim' else '#ff2d9b' }});color:{{ '#002a1a' if user.selected_coach=='sarah' else '#fff' }};padding:10px 22px;border-radius:50px;font-weight:800;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;display:inline-block;text-decoration:none;box-shadow:0 4px 16px rgba(255,45,155,.3);">💬 Parler</a>
+      </div>
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;background:rgba(255,45,155,.04);border:1px dashed rgba(255,45,155,.2);border-radius:var(--radius);padding:24px 28px;display:flex;align-items:center;gap:16px;">
+      <div style="font-size:2rem;">👤</div>
+      <div style="flex:1;">
+        <div style="font-weight:800;font-style:italic;text-transform:uppercase;margin-bottom:4px;">Aucun coach sélectionné</div>
+        <div style="font-size:.82rem;color:#666;">Choisis ton coach gratuit pour bénéficier d'un accompagnement personnalisé</div>
+      </div>
+      <a href="/coaches" class="fz-btn-primary" style="white-space:nowrap;">Choisir mon coach →</a>
+    </div>
+    {% endif %}
+
+    <div class="dashboard-grid">
+      <!-- Next session -->
+      <div class="card">
+        <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">📅 Prochaine séance</h3>
+        <div id="nextSession"><div style="color:var(--muted);">Chargement...</div></div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="card">
+        <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">⚡ Actions rapides</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <a href="/program" class="btn-primary full-width">Voir mon programme</a>
+          <a href="/nutrition" class="btn-ghost full-width" style="text-align:center;display:block;">Plan nutrition</a>
+          <button onclick="openModal('progressModal')" class="btn-ghost full-width">+ Enregistrer mon poids</button>
+        </div>
+      </div>
+
+      <!-- Week progression -->
+      <div class="card" style="grid-column:1/-1;">
+        <div class="flex-between" style="margin-bottom:20px;">
+          <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">📈 Semaine en cours</h3>
+          <a href="/progress" style="font-size:.78rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Tout voir →</a>
+        </div>
+        <div id="weekDays" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+
+      {% if user.subscription != 'premium' %}
+      <!-- Upgrade -->
+      <div style="grid-column:1/-1;position:relative;border-radius:var(--radius);overflow:hidden;min-height:220px;">
+        <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80');background-size:cover;background-position:center;filter:brightness(.2) saturate(1.2);"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(3,3,6,.95) 0%,rgba(255,45,155,.15) 100%);"></div>
+        <div style="position:relative;z-index:1;padding:40px;text-align:center;">
+          <div style="font-size:2.5rem;margin-bottom:12px;">🔓</div>
+          <h3 style="font-size:1.5rem;font-weight:900;margin-bottom:8px;letter-spacing:-.02em;font-style:italic;text-transform:uppercase;">DÉBLOQUE LES 4 SEMAINES</h3>
+          <p style="color:rgba(255,255,255,.55);margin-bottom:28px;font-size:.9rem;">Semaines 2, 3 et 4 + suivi avancé + plan nutrition complet</p>
+          <a href="/pricing" class="fz-btn-primary" style="font-size:.9rem;padding:14px 36px;">Passer Premium · 14,90€/mois</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<!-- Progress Modal -->
+<div id="progressModal" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('progressModal')"></div>
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('progressModal')">✕</button>
+    <h2>Mon poids</h2>
+    <div class="form-group"><label>Poids (kg)</label><input type="number" id="progressWeight" step="0.1" placeholder="Ex: 74.5"></div>
+    <div class="form-group"><label>Note (optionnel)</label><textarea id="progressNote" rows="2" placeholder="Comment tu te sens ?"></textarea></div>
+    <button onclick="saveProgress()" class="btn-primary full-width" style="margin-top:4px;">Enregistrer</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('new') === '1') {
+  const b = document.getElementById('welcomeBanner');
+  b.classList.remove('hidden'); b.style.display = 'flex';
+}
+async function loadStats() {
+  const d = await (await fetch('/api/get-stats')).json();
+  document.getElementById('statSessions').textContent = d.total_sessions;
+  document.getElementById('statStreak').textContent = d.streak;
+  document.getElementById('statWeek').textContent = 'S' + d.current_week;
+  const wc = d.weight_change;
+  document.getElementById('statWeight').textContent = wc > 0 ? '+' + wc : (wc || '–');
+}
+async function loadNextSession() {
+  const r = await fetch('/api/get-program');
+  if (!r.ok) { document.getElementById('nextSession').innerHTML = '<a href="/onboarding" class="btn-outline">Créer mon programme</a>'; return; }
+  const d = await r.json();
+  const day = d.workout?.weeks?.[0]?.days?.[0];
+  if (day) {
+    document.getElementById('nextSession').innerHTML = `
+      <div style="font-size:1.1rem;font-weight:900;margin-bottom:6px;font-style:italic;text-transform:uppercase;">${day.day} – ${day.type}</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:18px;">⏱ ${day.duration} &nbsp;·&nbsp; ${day.exercises.length} exercices</div>
+      <a href="/program" class="btn-green" style="font-size:.875rem;">C'est parti ! →</a>`;
+  }
+}
+function loadWeekDays() {
+  const days = ['L','M','M','J','V','S','D'];
+  const container = document.getElementById('weekDays');
+  const today = new Date().getDay();
+  days.forEach((d, i) => {
+    const isToday = (i === (today === 0 ? 6 : today - 1));
+    const div = document.createElement('div');
+    div.className = 'day-pill' + (isToday ? ' today' : '');
+    div.innerHTML = `<span>${d}</span><span style="font-size:1rem;">${isToday ? '📍' : '·'}</span>`;
+    container.appendChild(div);
+  });
+}
+async function saveProgress() {
+  const weight = document.getElementById('progressWeight').value;
+  if (!weight) return;
+  await fetch('/api/save-progress', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({weight, note: document.getElementById('progressNote').value}) });
+  showToast('Poids enregistré ! 💪', 'success');
+  closeModal('progressModal');
+  loadStats();
+}
+loadStats(); loadNextSession(); loadWeekDays();
+</script>
+{% endblock %}

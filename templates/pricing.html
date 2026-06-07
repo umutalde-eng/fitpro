@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Tarifs{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Pricing Hero -->
+  <div style="position:relative;padding:100px 40px 60px;text-align:center;background:#030306;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 100%,rgba(255,45,155,.12),transparent);pointer-events:none;"></div>
+    <div style="position:relative;z-index:1;">
+      <div style="font-size:.7rem;font-weight:800;color:#ff2d9b;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;">TARIFS</div>
+      <h1 style="font-size:clamp(2.5rem,5vw,4rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:12px;">CHOISIS TON <span style="background:linear-gradient(90deg,#ff2d9b,#8b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">PLAN</span></h1>
+      <p style="color:#666;font-size:1rem;">Commence gratuitement, passe Premium quand tu es prêt</p>
+    </div>
+  </div>
+
+  <div class="page-container" style="max-width:900px;margin:0 auto;">
+
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="pricing-card">
+        <div class="pricing-name">Gratuit</div>
+        <div class="pricing-price" style="font-style:italic;">0<sup>€</sup></div>
+        <div class="pricing-period">Pour toujours</div>
+        <div class="pricing-features">
+          <div class="pricing-feat"><span class="check">✓</span> Questionnaire personnalisé</div>
+          <div class="pricing-feat"><span class="check">✓</span> Programme semaine 1</div>
+          <div class="pricing-feat"><span class="check">✓</span> Plan nutrition de base</div>
+          <div class="pricing-feat"><span class="check">✓</span> Suivi poids simple</div>
+          <div class="pricing-feat"><span class="cross" style="color:var(--muted)">✕</span> <span style="color:var(--muted)">Semaines 2, 3 et 4</span></div>
+          <div class="pricing-feat"><span class="cross" style="color:var(--muted)">✕</span> <span style="color:var(--muted)">Suivi avancé</span></div>
+          <div class="pricing-feat"><span class="cross" style="color:var(--muted)">✕</span> <span style="color:var(--muted)">Nouveaux programmes</span></div>
+        </div>
+        {% if user %}
+          {% if user.subscription == 'free' %}
+            <button class="btn-ghost full-width" disabled style="opacity:.5;cursor:not-allowed;">Plan actuel</button>
+          {% else %}
+            <button class="btn-ghost full-width" disabled style="opacity:.5;">Non applicable</button>
+          {% endif %}
+        {% else %}
+          <a href="/onboarding" class="btn-ghost full-width" style="text-align:center;display:block;">Commencer gratuit</a>
+        {% endif %}
+      </div>
+
+      <!-- Premium -->
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⭐ Le plus populaire</div>
+        <div class="pricing-name" style="color:#ff2d9b;">Premium</div>
+        <div class="pricing-price" style="font-style:italic;background:linear-gradient(90deg,#ff2d9b,#8b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"><sup style="-webkit-text-fill-color:#ff2d9b;">€</sup>14<span style="font-size:1.5rem;-webkit-text-fill-color:#ff2d9b;">,90</span></div>
+        <div class="pricing-period">par mois · Sans engagement</div>
+        <div class="pricing-features">
+          <div class="pricing-feat"><span class="check">✓</span> Tout le plan gratuit</div>
+          <div class="pricing-feat"><span class="check">✓</span> <strong>4 semaines complètes</strong></div>
+          <div class="pricing-feat"><span class="check">✓</span> Programme progressif complet</div>
+          <div class="pricing-feat"><span class="check">✓</span> Plan nutrition détaillé</div>
+          <div class="pricing-feat"><span class="check">✓</span> Graphiques de progression</div>
+          <div class="pricing-feat"><span class="check">✓</span> Suivi séances avancé</div>
+          <div class="pricing-feat"><span class="check">✓</span> Nouveaux programmes chaque mois</div>
+        </div>
+        {% if user %}
+          {% if user.subscription == 'premium' %}
+            <button class="btn-primary full-width" disabled style="opacity:.7;">✓ Déjà Premium</button>
+          {% else %}
+            <button class="btn-primary full-width" onclick="startCheckout()">Passer Premium →</button>
+          {% endif %}
+        {% else %}
+          <a href="/onboarding" class="fz-btn-primary full-width" style="text-align:center;display:block;">Commencer maintenant →</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Trust badges -->
+    <div style="display:flex;justify-content:center;gap:40px;margin:48px 0;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">📅</div>
+        <div style="font-size:.75rem;font-weight:800;color:#e0e0e0;letter-spacing:.06em;text-transform:uppercase;">Semaine 1 gratuite</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">✕</div>
+        <div style="font-size:.75rem;font-weight:800;color:#e0e0e0;letter-spacing:.06em;text-transform:uppercase;">Sans engagement</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">🔒</div>
+        <div style="font-size:.75rem;font-weight:800;color:#e0e0e0;letter-spacing:.06em;text-transform:uppercase;">Paiement sécurisé</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">🎧</div>
+        <div style="font-size:.75rem;font-weight:800;color:#e0e0e0;letter-spacing:.06em;text-transform:uppercase;">Support 24/7</div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div style="margin-top:48px;">
+      <h3 style="font-size:1.3rem;font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:24px;text-align:center;">FAQ</h3>
+      <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="border-left:3px solid rgba(255,45,155,.4);">
+          <strong style="font-style:italic;">Puis-je annuler à tout moment ?</strong>
+          <p style="color:var(--muted);margin-top:8px;font-size:.9rem;line-height:1.6;">Oui, sans engagement. Tu peux annuler depuis ton espace client Stripe à tout moment.</p>
+        </div>
+        <div class="card" style="border-left:3px solid rgba(255,45,155,.4);">
+          <strong style="font-style:italic;">Est-ce que ça marche sans salle de sport ?</strong>
+          <p style="color:var(--muted);margin-top:8px;font-size:.9rem;line-height:1.6;">Absolument ! Tous les programmes sont conçus pour être réalisés à la maison, avec zéro équipement.</p>
+        </div>
+        <div class="card" style="border-left:3px solid rgba(255,45,155,.4);">
+          <strong style="font-style:italic;">Le programme est-il vraiment personnalisé ?</strong>
+          <p style="color:var(--muted);margin-top:8px;font-size:.9rem;line-height:1.6;">Oui, il est généré selon tes réponses : objectif, niveau, équipement disponible et disponibilités.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function startCheckout() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Redirection...';
+  const r = await fetch('/api/create-checkout', { method: 'POST' });
+  const d = await r.json();
+  if (d.url) {
+    window.location.href = d.url;
+  } else {
+    showToast(d.error || 'Erreur lors du paiement', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Passer Premium →';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,616 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Mes Coaches{% endblock %}
+
+{% block extra_css %}
+<style>
+.coaches-wrapper { padding-top: 64px; min-height: 100vh; background: #030306; }
+
+/* Hero */
+.coaches-hero { position:relative; padding:60px 40px 40px; text-align:center; overflow:hidden; }
+.coaches-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 60% at 50% 100%,rgba(255,45,155,.1),transparent); pointer-events:none; }
+.coaches-hero .label { font-size:.7rem; font-weight:800; color:#ff2d9b; letter-spacing:.15em; text-transform:uppercase; display:block; margin-bottom:14px; }
+.coaches-hero h1 { font-size:clamp(2.5rem,5vw,4rem); font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:-.03em; margin-bottom:10px; }
+.coaches-hero p { color:#666; font-size:.95rem; max-width:480px; margin:0 auto 8px; }
+
+/* Selection banner (first time) */
+.select-banner {
+  max-width:700px; margin:0 auto 40px;
+  background:rgba(255,45,155,.06);
+  border:1px solid rgba(255,45,155,.2);
+  border-radius:16px; padding:18px 24px;
+  display:flex; align-items:center; gap:14px;
+  font-size:.88rem; color:#ccc;
+}
+.select-banner strong { color:#fff; }
+.select-banner .sb-icon { font-size:1.6rem; flex-shrink:0; }
+
+/* Grid */
+.coaches-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:1100px; margin:0 auto; padding:0 40px 80px; }
+
+/* Card */
+.coach-card {
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:20px; overflow:hidden;
+  transition:transform .3s, box-shadow .3s, border-color .3s;
+  position:relative;
+}
+.coach-card:not(.locked-card) { cursor:pointer; }
+.coach-card:not(.locked-card):hover { transform:translateY(-6px); }
+.coach-card.my-coach { border-color:rgba(255,45,155,.5); box-shadow:0 0 50px rgba(255,45,155,.18); }
+.coach-card.selectable:hover { border-color:rgba(255,255,255,.2); transform:translateY(-4px); }
+
+/* My coach ribbon */
+.my-coach-ribbon {
+  position:absolute; top:0; left:0; right:0; z-index:10;
+  background:linear-gradient(135deg,#ff2d9b,#8b2fff);
+  text-align:center; padding:7px;
+  font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+}
+
+/* Photo */
+.coach-photo-wrap { position:relative; height:240px; overflow:hidden; }
+.coach-photo { width:100%; height:100%; object-fit:cover; transition:transform .4s; }
+.coach-card:not(.locked-card):hover .coach-photo { transform:scale(1.05); }
+.coach-photo-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(3,3,6,.95) 0%,rgba(3,3,6,.2) 60%,transparent 100%); }
+.coach-online { position:absolute; top:14px; right:14px; display:flex; align-items:center; gap:7px; background:rgba(0,0,0,.6); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.1); padding:5px 12px; border-radius:50px; font-size:.7rem; font-weight:700; color:#00e5a0; }
+.coach-online-dot { width:7px; height:7px; border-radius:50%; background:#00e5a0; animation:pulse-dot 1.5s infinite; }
+.coach-specialty-badge { position:absolute; bottom:14px; left:14px; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:5px 12px; border-radius:50px; border:1px solid; }
+
+/* Lock overlay */
+.lock-overlay-card {
+  position:absolute; inset:0; z-index:5;
+  background:rgba(3,3,6,.85);
+  backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; padding:32px;
+  text-align:center;
+}
+.lock-overlay-card .lock-icon { font-size:2.5rem; }
+.lock-overlay-card h4 { font-size:1rem; font-weight:900; font-style:italic; text-transform:uppercase; color:#fff; }
+.lock-overlay-card p { font-size:.8rem; color:#666; line-height:1.5; }
+.lock-overlay-card a { display:inline-block; background:linear-gradient(135deg,#ff2d9b,#8b2fff); color:#fff; padding:10px 24px; border-radius:50px; font-size:.78rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; text-decoration:none; box-shadow:0 4px 20px rgba(255,45,155,.3); transition:transform .2s; }
+.lock-overlay-card a:hover { transform:translateY(-2px); }
+
+/* Info */
+.coach-info { padding:20px; }
+.coach-name { font-size:1.2rem; font-weight:900; font-style:italic; text-transform:uppercase; margin-bottom:4px; }
+.coach-role { font-size:.72rem; color:#666; text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
+.coach-bio { font-size:.82rem; color:#888; line-height:1.6; margin-bottom:16px; }
+.coach-stats-row { display:flex; gap:16px; margin-bottom:16px; }
+.coach-stat strong { display:block; font-size:1rem; font-weight:800; }
+.coach-stat span { font-size:.68rem; color:#555; text-transform:uppercase; letter-spacing:.05em; }
+.coach-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
+.coach-tag { font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:50px; }
+.btn-chat { width:100%; padding:12px; border-radius:50px; font-weight:800; font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; border:none; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+/* Selection modal */
+.select-modal-backdrop { position:fixed; inset:0; z-index:300; background:rgba(3,3,6,.9); backdrop-filter:blur(20px); display:none; align-items:center; justify-content:center; padding:80px 20px 20px; }
+.select-modal-backdrop.open { display:flex; animation:fadeIn .25s ease; }
+.select-modal { background:#0d0d14; border:1px solid rgba(255,45,155,.2); border-radius:24px; padding:48px 40px; max-width:520px; width:100%; text-align:center; box-shadow:0 24px 80px rgba(0,0,0,.8),0 0 60px rgba(255,45,155,.08); }
+.select-modal h2 { font-size:1.8rem; font-weight:900; font-style:italic; text-transform:uppercase; margin-bottom:10px; }
+.select-modal p { color:#666; font-size:.88rem; margin-bottom:32px; line-height:1.6; }
+.select-modal-coaches { display:flex; flex-direction:column; gap:12px; }
+.select-option { display:flex; align-items:center; gap:16px; background:rgba(255,255,255,.04); border:2px solid rgba(255,255,255,.06); border-radius:16px; padding:16px 18px; cursor:pointer; transition:all .2s; text-align:left; }
+.select-option:hover { border-color:rgba(255,45,155,.3); background:rgba(255,45,155,.05); }
+.select-option.picked { border-color:#ff2d9b; background:rgba(255,45,155,.08); box-shadow:0 0 20px rgba(255,45,155,.15); }
+.select-option img { width:52px; height:52px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid rgba(255,255,255,.1); }
+.select-option .so-info { flex:1; }
+.select-option .so-name { font-weight:800; font-size:.95rem; font-style:italic; text-transform:uppercase; color:#fff; }
+.select-option .so-role { font-size:.72rem; color:#666; margin-top:3px; }
+.select-option .so-check { width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,.15); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.7rem; transition:all .2s; }
+.select-option.picked .so-check { background:#ff2d9b; border-color:#ff2d9b; color:#fff; }
+.btn-confirm-coach { width:100%; margin-top:28px; padding:14px; border-radius:50px; background:linear-gradient(135deg,#ff2d9b,#8b2fff); color:#fff; border:none; font-weight:800; font-size:.88rem; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:all .2s; box-shadow:0 4px 20px rgba(255,45,155,.35); }
+.btn-confirm-coach:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,45,155,.5); }
+.btn-confirm-coach:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+/* Chat panel */
+.chat-backdrop { position:fixed; inset:0; z-index:200; background:rgba(3,3,6,.7); backdrop-filter:blur(12px); display:none; align-items:flex-end; justify-content:flex-end; padding:80px 32px 24px; }
+.chat-backdrop.open { display:flex; animation:fadeIn .25s ease; }
+.chat-panel { width:420px; height:600px; background:#0d0d14; border:1px solid rgba(255,255,255,.08); border-radius:24px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.8); }
+.chat-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:14px; flex-shrink:0; }
+.chat-header-avatar { width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid #ff2d9b; flex-shrink:0; }
+.chat-header-info { flex:1; }
+.chat-header-name { font-weight:800; font-size:.95rem; font-style:italic; text-transform:uppercase; }
+.chat-header-status { font-size:.72rem; color:#00e5a0; display:flex; align-items:center; gap:5px; margin-top:2px; }
+.chat-header-status::before { content:''; width:6px; height:6px; border-radius:50%; background:#00e5a0; animation:pulse-dot 1.5s infinite; display:inline-block; }
+.chat-close { background:rgba(255,255,255,.06); border:none; color:#888; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.chat-close:hover { color:#fff; background:rgba(255,45,155,.2); }
+.chat-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px; scroll-behavior:smooth; }
+.chat-messages::-webkit-scrollbar { width:4px; }
+.chat-messages::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:2px; }
+.msg { display:flex; flex-direction:column; animation:fadeIn .3s ease; }
+.msg.user { align-items:flex-end; }
+.msg.coach { align-items:flex-start; }
+.msg-row { display:flex; align-items:flex-end; gap:8px; }
+.msg.user .msg-row { flex-direction:row-reverse; }
+.msg-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+.msg-bubble { max-width:78%; padding:11px 15px; border-radius:18px; font-size:.86rem; line-height:1.55; }
+.msg.user .msg-bubble { background:linear-gradient(135deg,#ff2d9b,#8b2fff); color:#fff; border-bottom-right-radius:5px; }
+.msg.coach .msg-bubble { background:rgba(255,255,255,.07); color:#ddd; border-bottom-left-radius:5px; }
+.msg-time { font-size:.65rem; color:#444; margin-top:4px; padding:0 4px; }
+.typing-indicator { display:flex; align-items:center; gap:8px; animation:fadeIn .3s ease; }
+.typing-bubble { background:rgba(255,255,255,.07); padding:12px 16px; border-radius:18px; border-bottom-left-radius:5px; display:flex; gap:5px; align-items:center; }
+.typing-dot { width:7px; height:7px; border-radius:50%; background:#666; }
+.typing-dot:nth-child(1) { animation:bounce3 1s infinite 0s; }
+.typing-dot:nth-child(2) { animation:bounce3 1s infinite .15s; }
+.typing-dot:nth-child(3) { animation:bounce3 1s infinite .3s; }
+.chat-suggestions { padding:10px 16px 0; display:flex; flex-wrap:wrap; gap:6px; flex-shrink:0; }
+.suggestion-chip { background:rgba(255,45,155,.1); border:1px solid rgba(255,45,155,.25); color:#ff9dcc; padding:6px 13px; border-radius:50px; font-size:.72rem; font-weight:600; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.suggestion-chip:hover { background:rgba(255,45,155,.2); }
+.chat-input-row { padding:14px 16px; border-top:1px solid rgba(255,255,255,.06); display:flex; gap:10px; align-items:center; flex-shrink:0; }
+.chat-input { flex:1; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:#e0e0e0; padding:11px 16px; border-radius:50px; font-size:.87rem; outline:none; transition:border-color .2s; }
+.chat-input:focus { border-color:rgba(255,45,155,.4); }
+.chat-input::placeholder { color:#444; }
+.chat-send { width:42px; height:42px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,#ff2d9b,#8b2fff); border:none; color:#fff; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .2s,box-shadow .2s; box-shadow:0 4px 16px rgba(255,45,155,.3); }
+.chat-send:hover { transform:scale(1.08); }
+
+@media (max-width:900px) {
+  .coaches-grid { grid-template-columns:1fr; padding:0 20px 40px; }
+  .chat-backdrop { padding:64px 0 0; align-items:flex-end; justify-content:center; }
+  .chat-panel { width:100%; border-radius:24px 24px 0 0; height:75vh; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="coaches-wrapper">
+
+  <div class="coaches-hero">
+    <span class="label">Support personnalisé</span>
+    <h1>TES <span style="background:linear-gradient(90deg,#ff2d9b,#8b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">COACHES</span></h1>
+    <p>Choisis ton coach — chaque spécialité, un expert dédié à ta réussite</p>
+
+    {% if not user.selected_coach %}
+    <div class="select-banner" style="position:relative;z-index:1;">
+      <div class="sb-icon">👆</div>
+      <div><strong>Choisis ton coach gratuit</strong> — Il t'accompagnera tout au long de ta transformation. Les 2 autres experts sont accessibles en Premium.</div>
+    </div>
+    {% else %}
+    <div style="position:relative;z-index:1;display:inline-flex;align-items:center;gap:10px;background:rgba(255,45,155,.08);border:1px solid rgba(255,45,155,.2);padding:10px 20px;border-radius:50px;font-size:.82rem;color:#ccc;margin-bottom:20px;">
+      <span style="color:#ff2d9b;">✓</span> Ton coach : <strong style="color:#fff;text-transform:uppercase;font-style:italic;">{{ user.selected_coach|capitalize }}</strong>
+      {% if user.subscription != 'premium' %}
+      · <a href="/pricing" style="color:#ff2d9b;font-weight:700;">Débloquer tous les coaches →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="coaches-grid">
+
+    {# ── Marcus ─────────────────────────────────────────────── #}
+    {% set marcus_locked = user.selected_coach and user.selected_coach != 'marcus' and user.subscription != 'premium' %}
+    <div class="coach-card {% if user.selected_coach == 'marcus' %}my-coach{% elif not marcus_locked %}selectable{% else %}locked-card{% endif %}"
+         {% if not marcus_locked %}onclick="handleCoachClick('marcus')"{% endif %}>
+
+      {% if user.selected_coach == 'marcus' %}
+      <div class="my-coach-ribbon">⭐ Mon Coach</div>
+      {% endif %}
+
+      {% if marcus_locked %}
+      <div class="lock-overlay-card">
+        <div class="lock-icon">🔒</div>
+        <h4>Accès Premium</h4>
+        <p>Marcus est disponible en Premium. Débloquez tous les coaches et accélérez vos résultats.</p>
+        <a href="/pricing">Passer Premium · 14,90€/mois</a>
+      </div>
+      {% endif %}
+
+      <div class="coach-photo-wrap" {% if user.selected_coach == 'marcus' %}style="margin-top:32px"{% endif %}>
+        <img src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=600&q=80" class="coach-photo" alt="Marcus">
+        <div class="coach-photo-overlay"></div>
+        <div class="coach-online"><div class="coach-online-dot"></div> En ligne</div>
+        <span class="coach-specialty-badge" style="background:rgba(255,45,155,.15);border-color:rgba(255,45,155,.4);color:#ff2d9b;">⚡ Entraînement & Force</span>
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Marcus</div>
+        <div class="coach-role">Coach Performance · Ex-athlète pro</div>
+        <div class="coach-bio">Ancien champion de fitness. Programme, cardio, musculation — il pousse tes limites sans compromis.</div>
+        <div class="coach-stats-row">
+          <div class="coach-stat"><strong style="color:#ff2d9b;">12</strong><span>Ans exp.</span></div>
+          <div class="coach-stat"><strong style="color:#ff2d9b;">800+</strong><span>Clients</span></div>
+          <div class="coach-stat"><strong style="color:#ff2d9b;">4.9★</strong><span>Note</span></div>
+        </div>
+        <div class="coach-tags">
+          <span class="coach-tag" style="background:rgba(255,45,155,.12);color:#ff9dcc;">HIIT</span>
+          <span class="coach-tag" style="background:rgba(255,45,155,.12);color:#ff9dcc;">Force</span>
+          <span class="coach-tag" style="background:rgba(255,45,155,.12);color:#ff9dcc;">Cardio</span>
+          <span class="coach-tag" style="background:rgba(255,45,155,.12);color:#ff9dcc;">Programme</span>
+        </div>
+        {% if user.selected_coach == 'marcus' %}
+          <button class="btn-chat" onclick="event.stopPropagation();openChat('marcus')" style="background:linear-gradient(135deg,#ff2d9b,#8b2fff);color:#fff;box-shadow:0 4px 20px rgba(255,45,155,.3);">💬 Parler à Marcus</button>
+        {% elif not marcus_locked %}
+          <button class="btn-chat" style="background:rgba(255,45,155,.1);color:#ff9dcc;border:1px solid rgba(255,45,155,.2);">👆 Choisir Marcus comme coach</button>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Sarah ──────────────────────────────────────────────── #}
+    {% set sarah_locked = user.selected_coach and user.selected_coach != 'sarah' and user.subscription != 'premium' %}
+    <div class="coach-card {% if user.selected_coach == 'sarah' %}my-coach{% elif not sarah_locked %}selectable{% else %}locked-card{% endif %}"
+         {% if not sarah_locked %}onclick="handleCoachClick('sarah')"{% endif %}>
+
+      {% if user.selected_coach == 'sarah' %}
+      <div class="my-coach-ribbon">⭐ Mon Coach</div>
+      {% endif %}
+
+      {% if sarah_locked %}
+      <div class="lock-overlay-card">
+        <div class="lock-icon">🔒</div>
+        <h4>Accès Premium</h4>
+        <p>Sarah est disponible en Premium. Débloque son expertise nutrition pour booster tes résultats.</p>
+        <a href="/pricing">Passer Premium · 14,90€/mois</a>
+      </div>
+      {% endif %}
+
+      <div class="coach-photo-wrap" {% if user.selected_coach == 'sarah' %}style="margin-top:32px"{% endif %}>
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" class="coach-photo" alt="Sarah">
+        <div class="coach-photo-overlay"></div>
+        <div class="coach-online"><div class="coach-online-dot"></div> En ligne</div>
+        <span class="coach-specialty-badge" style="background:rgba(0,229,160,.12);border-color:rgba(0,229,160,.35);color:#00e5a0;">🥗 Nutrition & Santé</span>
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Sarah</div>
+        <div class="coach-role">Nutritionniste sportive · Diététicienne certifiée</div>
+        <div class="coach-bio">Diplômée en nutrition sportive. Elle transforme ton alimentation en carburant de performance.</div>
+        <div class="coach-stats-row">
+          <div class="coach-stat"><strong style="color:#00e5a0;">8</strong><span>Ans exp.</span></div>
+          <div class="coach-stat"><strong style="color:#00e5a0;">600+</strong><span>Clients</span></div>
+          <div class="coach-stat"><strong style="color:#00e5a0;">4.8★</strong><span>Note</span></div>
+        </div>
+        <div class="coach-tags">
+          <span class="coach-tag" style="background:rgba(0,229,160,.1);color:#00e5a0;">Nutrition</span>
+          <span class="coach-tag" style="background:rgba(0,229,160,.1);color:#00e5a0;">Macros</span>
+          <span class="coach-tag" style="background:rgba(0,229,160,.1);color:#00e5a0;">Poids</span>
+          <span class="coach-tag" style="background:rgba(0,229,160,.1);color:#00e5a0;">Minceur</span>
+        </div>
+        {% if user.selected_coach == 'sarah' %}
+          <button class="btn-chat" onclick="event.stopPropagation();openChat('sarah')" style="background:linear-gradient(135deg,#00e5a0,#00b377);color:#002a1a;box-shadow:0 4px 20px rgba(0,229,160,.25);">💬 Parler à Sarah</button>
+        {% elif not sarah_locked %}
+          <button class="btn-chat" style="background:rgba(0,229,160,.08);color:#00e5a0;border:1px solid rgba(0,229,160,.2);">👆 Choisir Sarah comme coach</button>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Karim ──────────────────────────────────────────────── #}
+    {% set karim_locked = user.selected_coach and user.selected_coach != 'karim' and user.subscription != 'premium' %}
+    <div class="coach-card {% if user.selected_coach == 'karim' %}my-coach{% elif not karim_locked %}selectable{% else %}locked-card{% endif %}"
+         {% if not karim_locked %}onclick="handleCoachClick('karim')"{% endif %}>
+
+      {% if user.selected_coach == 'karim' %}
+      <div class="my-coach-ribbon">⭐ Mon Coach</div>
+      {% endif %}
+
+      {% if karim_locked %}
+      <div class="lock-overlay-card">
+        <div class="lock-icon">🔒</div>
+        <h4>Accès Premium</h4>
+        <p>Karim est disponible en Premium. Son coaching mental est la clé pour tenir sur la durée.</p>
+        <a href="/pricing">Passer Premium · 14,90€/mois</a>
+      </div>
+      {% endif %}
+
+      <div class="coach-photo-wrap" {% if user.selected_coach == 'karim' %}style="margin-top:32px"{% endif %}>
+        <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80" class="coach-photo" alt="Karim">
+        <div class="coach-photo-overlay"></div>
+        <div class="coach-online"><div class="coach-online-dot"></div> En ligne</div>
+        <span class="coach-specialty-badge" style="background:rgba(139,47,255,.15);border-color:rgba(139,47,255,.4);color:#b96fff;">🧠 Mental & Motivation</span>
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Karim</div>
+        <div class="coach-role">Coach Mental · Préparateur psychologique</div>
+        <div class="coach-bio">Spécialiste en psychologie sportive. Il brise tes blocages et maintient ta motivation sur la durée.</div>
+        <div class="coach-stats-row">
+          <div class="coach-stat"><strong style="color:#b96fff;">10</strong><span>Ans exp.</span></div>
+          <div class="coach-stat"><strong style="color:#b96fff;">500+</strong><span>Clients</span></div>
+          <div class="coach-stat"><strong style="color:#b96fff;">4.9★</strong><span>Note</span></div>
+        </div>
+        <div class="coach-tags">
+          <span class="coach-tag" style="background:rgba(139,47,255,.12);color:#b96fff;">Motivation</span>
+          <span class="coach-tag" style="background:rgba(139,47,255,.12);color:#b96fff;">Mental</span>
+          <span class="coach-tag" style="background:rgba(139,47,255,.12);color:#b96fff;">Habitudes</span>
+          <span class="coach-tag" style="background:rgba(139,47,255,.12);color:#b96fff;">Mindset</span>
+        </div>
+        {% if user.selected_coach == 'karim' %}
+          <button class="btn-chat" onclick="event.stopPropagation();openChat('karim')" style="background:linear-gradient(135deg,#8b2fff,#6a1fd4);color:#fff;box-shadow:0 4px 20px rgba(139,47,255,.3);">💬 Parler à Karim</button>
+        {% elif not karim_locked %}
+          <button class="btn-chat" style="background:rgba(139,47,255,.1);color:#b96fff;border:1px solid rgba(139,47,255,.2);">👆 Choisir Karim comme coach</button>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Coach Selection Modal ────────────────────────────────────── -->
+<div class="select-modal-backdrop" id="selectModalBackdrop">
+  <div class="select-modal">
+    <div style="font-size:2.5rem;margin-bottom:16px;">🏆</div>
+    <h2>Choisis ton <span style="background:linear-gradient(90deg,#ff2d9b,#8b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">coach</span></h2>
+    <p>Ton coach t'accompagnera tout au long de ta transformation. Ce choix peut être modifié en upgrading. Les autres coaches sont accessibles en Premium.</p>
+    <div class="select-modal-coaches" id="selectModalCoaches">
+      <div class="select-option" id="opt-marcus" onclick="pickCoach('marcus')">
+        <img src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=200&q=80" alt="Marcus">
+        <div class="so-info">
+          <div class="so-name">Marcus</div>
+          <div class="so-role">⚡ Entraînement & Force — Pour progresser physiquement</div>
+        </div>
+        <div class="so-check" id="check-marcus"></div>
+      </div>
+      <div class="select-option" id="opt-sarah" onclick="pickCoach('sarah')">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&q=80" alt="Sarah">
+        <div class="so-info">
+          <div class="so-name">Sarah</div>
+          <div class="so-role">🥗 Nutrition & Santé — Pour maîtriser ton alimentation</div>
+        </div>
+        <div class="so-check" id="check-sarah"></div>
+      </div>
+      <div class="select-option" id="opt-karim" onclick="pickCoach('karim')">
+        <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=200&q=80" alt="Karim">
+        <div class="so-info">
+          <div class="so-name">Karim</div>
+          <div class="so-role">🧠 Mental & Motivation — Pour tenir sur la durée</div>
+        </div>
+        <div class="so-check" id="check-karim"></div>
+      </div>
+    </div>
+    <button class="btn-confirm-coach" id="btnConfirmCoach" onclick="confirmCoach()" disabled>Choisir ce coach →</button>
+  </div>
+</div>
+
+<!-- ── Chat Panel ────────────────────────────────────────────────── -->
+<div class="chat-backdrop" id="chatBackdrop" onclick="handleBackdropClick(event)">
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <img id="chatAvatar" src="" class="chat-header-avatar" alt="">
+      <div class="chat-header-info">
+        <div class="chat-header-name" id="chatName"></div>
+        <div class="chat-header-status" id="chatStatus"></div>
+      </div>
+      <button class="chat-close" onclick="closeChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-suggestions" id="chatSuggestions"></div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Écris ton message..." onkeydown="handleKey(event)">
+      <button class="chat-send" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const USER_NAME  = "{{ user.name }}";
+const IS_PREMIUM = {{ 'true' if user.subscription == 'premium' else 'false' }};
+const CURRENT_COACH = "{{ user.selected_coach or '' }}";
+
+// ── Coach configs ─────────────────────────────────────────────────────────────
+const COACHES = {
+  marcus: {
+    name:"Marcus", role:"Coach Performance", status:"En ligne maintenant",
+    avatar:"https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=200&q=80",
+    color:"#ff2d9b", delay:[1200,2000],
+    greeting:[`Yo ${USER_NAME} ! 💪 Marcus ici. Prêt à bosser ? Je suis là pour pousser tes limites. Quelle est ta question ?`],
+    suggestions:["Mon programme est trop dur","Comment progresser plus vite ?","Quand faire du cardio ?","Je n'ai pas de matériel"],
+    responses:{
+      douleur:["Douleur musculaire ou articulaire ? Si c'est des courbatures, c'est normal — ça veut dire que tu travailles ! 🔥 Si c'est une douleur articulaire, stop immédiatement et repose-toi 2-3 jours.","La douleur c'est de l'information. Courbatures = progression. Douleur aiguë = signal d'alarme. Règle d'or : si ça fait mal en articulaire, tu t'arrêtes. Point."],
+      fatigue:[`Fatigue normale ou surmenage ? ${USER_NAME}, si t'es épuisé, c'est souvent la nutrition ou le sommeil le problème. Tu dors combien d'heures ? 😴`,"Le repos c'est 50% des résultats. Sans récupération, pas de progression. Intègre 1 jour de repos actif entre chaque séance intense."],
+      motivation:[`${USER_NAME} écoute-moi ! 👊 La motivation c'est comme une douche froide — t'en as pas besoin avant, t'en veux plus pendant, mais après t'es content. Lance-toi pendant 5 minutes, le reste suivra.`,"Le secret des champions c'est pas la motivation, c'est les habitudes. Quand t'as pas envie, t'entraînes-toi quand même. C'est là que se fait la différence."],
+      cardio:["Le cardio c'est le plus efficace en LISS (basse intensité, longue durée) à jeun le matin, ou en HIIT après la musculation. 2-3x par semaine 20-30 min suffit amplement. 🏃","HIIT vs cardio modéré : le HIIT brûle plus de calories en moins de temps et booste le métabolisme 24h après. Commence par 15 min 2x/semaine et augmente progressivement."],
+      programme:[`Ton programme FitPro est calibré pour toi ${USER_NAME} ! Les semaines 2-4 (Premium) augmentent progressivement l'intensité. Chaque semaine est plus dure que la précédente 💥`,"Un bon programme c'est 3 choses : progressivité, régularité, récupération. Ne saute pas les jours de repos, c'est là que tes muscles grandissent."],
+      muscle:["Pour construire du muscle : 1) Protéines suffisantes (1.6-2g/kg), 2) Surcharge progressive, 3) Sommeil 7-8h minimum. Sans ces 3 éléments, difficile de progresser. 💪","La croissance musculaire se passe pendant le repos. L'entraînement c'est le stimulus, la nutrition et le sommeil c'est la construction."],
+      poids:["Pour perdre du poids : déficit calorique de 300-500 kcal/jour, 3 séances/semaine, beaucoup d'eau. La régularité sur 12 semaines bat toujours un régime de choc sur 2 semaines. 📊","Le poids peut fluctuer de 1-2kg en une journée. Ne te pèse pas tous les jours — une fois par semaine, le matin à jeun."],
+      default:[`Bonne question ${USER_NAME} ! Reste focus sur ton programme, respecte les jours de repos, et n'oublie pas que la régularité sur la durée bat toujours l'intensité sur le court terme. 💪`,"La règle : si tu suis ton programme FitPro à la lettre pendant 4 semaines, tu verras des résultats. La question c'est pas le programme — c'est ta constance.",`${USER_NAME}, dans le fitness, 80% du résultat vient de 20% des efforts : entraîne-toi régulièrement, mange proprement, dors bien.`]
+    }
+  },
+  sarah: {
+    name:"Sarah", role:"Nutritionniste sportive", status:"Disponible maintenant",
+    avatar:"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&q=80",
+    color:"#00e5a0", delay:[1000,1800],
+    greeting:[`Bonjour ${USER_NAME} ! 🌿 Je suis Sarah, ta nutritionniste. L'alimentation c'est 70% du résultat — commençons par les bases. Qu'est-ce que tu veux savoir ?`],
+    suggestions:["Que manger avant l'entraînement ?","Je n'arrive pas à perdre du poids","C'est quoi les macros ?","Que manger le soir ?"],
+    responses:{
+      proteine:["Les protéines sont les briques de tes muscles 🧱 Vise 1.6 à 2g par kg de poids de corps. Sources idéales : poulet, œufs, poisson, légumineuses, fromage blanc 0%.","Timing des protéines : manger 20-40g dans les 2h après l'entraînement optimise la synthèse musculaire. Fromage blanc avec des fruits marche très bien."],
+      glucide:["Les glucides sont ton carburant, pas ton ennemi ! 🍚 Favorise les glucides complexes (avoine, riz complet, patate douce) plutôt que les rapides (pain blanc, sucre).","Réduire les glucides aide à perdre du poids MAIS une restriction trop sévère fatigue et n'est pas tenable. Moins de glucides raffinés, pas les supprimer."],
+      calorie:["Pour perdre du poids, un déficit de 300-500 kcal/jour est idéal. Calcul : ton poids x 30 = tes besoins de base. Enlève 400 kcal. 🧮","Compter les calories peut être utile au début pour prendre conscience des quantités. Sur le long terme, apprendre à reconnaître les aliments nutritifs est plus durable."],
+      manger:[`${USER_NAME}, mes règles d'or 🌿 : 1) Protéines à chaque repas, 2) Légumes à volonté, 3) Glucides autour des entraînements, 4) Graisses saines le soir, 5) 2-2.5L d'eau minimum.`,"Avant l'entraînement : glucides complexes + protéines légères (flocons d'avoine + banane + yaourt). Après : protéines + glucides (riz + poulet + légumes)."],
+      sucre:["Le sucre crée des pics d'insuline, des fringales, et des calories vides 😤 Commence par éliminer les boissons sucrées et les bonbons.","Remplace le sucre par des fruits entiers. Tu satisfais l'envie de sucre avec des fibres et des vitamines en plus."],
+      default:[`Super question ${USER_NAME} ! Si tu manges 80% d'aliments non transformés, bois 2L d'eau/jour et fais attention aux portions, tu es déjà dans le top 20%. 🥗`,"En nutrition, les bases comptent plus que les détails. Protéines suffisantes, légumes à chaque repas, éviter les ultra-transformés, bien s'hydrater.",`${USER_NAME}, la meilleure alimentation c'est celle que tu peux tenir sur la durée. 80% de bons choix, 20% d'entorses. La constance bat la perfection.`]
+    }
+  },
+  karim: {
+    name:"Karim", role:"Coach Mental", status:"En ligne",
+    avatar:"https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=200&q=80",
+    color:"#8b2fff", delay:[1400,2200],
+    greeting:[`Salut ${USER_NAME} 🙏 Je suis Karim, coach mental. Tout commence dans la tête — le physique suit. Dis-moi, où en es-tu mentalement avec ta transformation ?`],
+    suggestions:["Je n'arrive pas à rester régulier","J'ai abandonné plusieurs fois","Comment ne pas craquer ?","Je manque de confiance"],
+    responses:{
+      motivation:[`${USER_NAME}, voici la vérité sur la motivation 🧠 : elle ne dure pas. Ce qui dure, c'est l'identité. Arrête de dire "j'essaie de perdre du poids" et dis "je suis quelqu'un qui prend soin de son corps". Ça change tout.`,"La motivation vient APRÈS l'action, pas avant. Lance-toi pendant 2 minutes. Le cerveau s'adapte et la motivation suit. C'est prouvé par la neuroscience."],
+      abandon:[`Le fait que tu sois là ${USER_NAME} prouve que tu n'as pas vraiment abandonné — tu fais une pause. Les champions ne sont pas ceux qui ne tombent jamais, ce sont ceux qui se relèvent. Qu'est-ce qui t'avait fait arrêter la dernière fois ? 🤔`,"Chaque tentative t'a appris quelque chose. Ce n'est pas de l'échec — c'est de la recherche. Cette fois-ci, tu sais ce qui ne fonctionne pas."],
+      habitude:["Construire une habitude fitness en 3 étapes : 1) Attache-la à une habitude existante, 2) Commence ridiculement petit (5 min), 3) Célèbre chaque petite victoire. 🧠","La règle des 2 minutes : toute habitude que tu veux créer, commence par une version de 2 minutes. 'Je vais mettre mes chaussures de sport'. Le commencement est le combat principal."],
+      confiance:[`La confiance ne vient pas de la réussite ${USER_NAME} — elle vient de l'action répétée. Chaque séance que tu complètes envoie un signal à ton cerveau : 'je suis quelqu'un qui tient ses engagements'. 💪`,"Exercice puissant : liste 3 défis physiques que t'as déjà surmontés dans ta vie. Ces preuves existent. Utilise-les comme carburant."],
+      stress:["Le stress chronique augmente le cortisol, ce qui favorise la prise de graisse et nuit à la récupération. 3 techniques efficaces : respiration 4-7-8, méditation 5 min/jour, marche en nature. 🌿","Avant une séance stressante : tiens-toi droit, épaules en arrière, mains sur les hanches pendant 2 minutes. Ça réduit le cortisol de 25%. Amy Cuddy l'a prouvé à Harvard."],
+      régulier:[`La régularité ${USER_NAME} c'est THE secret. Pas l'intensité — la constance. Voici comment j'ai aidé +200 clients : créer un 'streak' et ne jamais le casser. Commence par 7 jours. 🔥`,"Astuce : place tes entraînements comme des RDV professionnels dans ton agenda. Fixes et non négociables."],
+      default:[`${USER_NAME}, ce que tu traverses est normal et fait partie du processus 🙏 Dans 6 mois, tu veux être où ? Visualise-le précisément.`,"Le changement est inconfortable par définition. Si tu te sens à l'aise tout le temps, tu ne grandis probablement pas. Accepte l'inconfort comme un signal de progression.",`L'état d'esprit le plus puissant : la curiosité plutôt que le jugement. Au lieu de 'je suis nul', dis 'c'est intéressant, qu'est-ce que ça m'apprend sur moi ?' ${USER_NAME}, tu es plus fort que tu ne le crois. 💪`]
+    }
+  }
+};
+
+let currentCoach = null;
+let isTyping = false;
+let pendingCoach = null;
+
+// ── Coach click handler ───────────────────────────────────────────────────────
+function handleCoachClick(coachId) {
+  if (CURRENT_COACH === coachId) {
+    openChat(coachId);
+  } else if (!CURRENT_COACH) {
+    showSelectModal(coachId);
+  } else if (IS_PREMIUM) {
+    openChat(coachId);
+  }
+}
+
+// ── Selection modal ───────────────────────────────────────────────────────────
+function showSelectModal(preselect) {
+  document.getElementById('selectModalBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (preselect) pickCoach(preselect);
+}
+
+function pickCoach(coachId) {
+  pendingCoach = coachId;
+  ['marcus','sarah','karim'].forEach(id => {
+    document.getElementById('opt-'+id).classList.toggle('picked', id === coachId);
+    document.getElementById('check-'+id).textContent = id === coachId ? '✓' : '';
+  });
+  document.getElementById('btnConfirmCoach').disabled = false;
+}
+
+async function confirmCoach() {
+  if (!pendingCoach) return;
+  const btn = document.getElementById('btnConfirmCoach');
+  btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+  const r = await fetch('/api/select-coach', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({coach_id: pendingCoach})});
+  const d = await r.json();
+
+  if (d.success) {
+    document.getElementById('selectModalBackdrop').classList.remove('open');
+    document.body.style.overflow = '';
+    showToast(`${COACHES[pendingCoach].name} est maintenant ton coach ! 🎉`, 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    btn.disabled = false; btn.textContent = 'Choisir ce coach →';
+    showToast('Erreur, réessaie', 'error');
+  }
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+function openChat(coachId) {
+  currentCoach = coachId;
+  const coach = COACHES[coachId];
+  document.getElementById('chatAvatar').src = coach.avatar;
+  document.getElementById('chatName').textContent = coach.name;
+  document.getElementById('chatStatus').textContent = coach.status;
+  document.getElementById('chatMessages').innerHTML = '';
+  renderSuggestions(coach.suggestions);
+  document.getElementById('chatBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => { hideTyping(); addCoachMessage(coach.greeting[0]); }, coach.delay[0]);
+  }, 300);
+}
+
+function closeChat() {
+  document.getElementById('chatBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+  currentCoach = null;
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('chatBackdrop')) closeChat();
+}
+
+function addCoachMessage(text) {
+  const coach = COACHES[currentCoach];
+  const msgs = document.getElementById('chatMessages');
+  const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const msg = document.createElement('div');
+  msg.className = 'msg coach';
+  msg.innerHTML = `<div class="msg-row"><img src="${coach.avatar}" class="msg-avatar" alt=""><div class="msg-bubble">${text}</div></div><div class="msg-time">${coach.name} · ${now}</div>`;
+  msgs.appendChild(msg); scrollToBottom();
+}
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const msg = document.createElement('div');
+  msg.className = 'msg user';
+  msg.innerHTML = `<div class="msg-row"><div class="msg-bubble">${text}</div></div><div class="msg-time">Toi · ${now}</div>`;
+  msgs.appendChild(msg); scrollToBottom();
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const coach = COACHES[currentCoach];
+  const el = document.createElement('div');
+  el.className = 'typing-indicator'; el.id = 'typingIndicator';
+  el.innerHTML = `<img src="${coach.avatar}" class="msg-avatar" alt=""><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  msgs.appendChild(el); scrollToBottom(); isTyping = true;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove(); isTyping = false;
+}
+
+function scrollToBottom() {
+  const msgs = document.getElementById('chatMessages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function getResponse(userText) {
+  const coach = COACHES[currentCoach];
+  const text = userText.toLowerCase();
+  const keywords = {
+    douleur:['douleur','mal','blessé','courbature'], fatigue:['fatigué','fatigue','épuisé','crevé','sommeil'],
+    motivation:['motivation','envie','démotivé','découragement'], cardio:['cardio','course','courir','hiit','endurance'],
+    programme:['programme','plan','séance','workout','entraînement'], muscle:['muscle','musculation','masse','volume'],
+    poids:['poids','peser','kilos','maigrir','grossir'], proteine:['protéine','proteine','whey','viande','poulet','œuf'],
+    glucide:['glucide','sucre','carb','riz','pâte'], calorie:['calorie','déficit','kcal'],
+    manger:['manger','repas','alimentation','avant','après'], sucre:['sucre','bonbon','gâteau','chocolat'],
+    habitude:['habitude','routine','régulier','régularité'], confiance:['confiance','estime','doute','nul'],
+    stress:['stress','anxiété','angoisse','pression'], régulier:['régulier','constance','tenir'],
+    abandon:['abandonné','arrêté','rechute','j\'abandonne'], default:[]
+  };
+  for (const [key, kws] of Object.entries(keywords)) {
+    if (kws.length && kws.some(kw => text.includes(kw)) && coach.responses[key]) {
+      const arr = coach.responses[key];
+      return arr[Math.floor(Math.random()*arr.length)];
+    }
+  }
+  const def = coach.responses.default;
+  return def[Math.floor(Math.random()*def.length)];
+}
+
+function sendMessage(text) {
+  const input = document.getElementById('chatInput');
+  const msg = text || input.value.trim();
+  if (!msg || isTyping) return;
+  addUserMessage(msg); input.value = '';
+  document.getElementById('chatSuggestions').innerHTML = '';
+  const coach = COACHES[currentCoach];
+  const response = getResponse(msg);
+  showTyping();
+  const delay = coach.delay[0] + Math.random()*(coach.delay[1]-coach.delay[0]);
+  setTimeout(() => { hideTyping(); addCoachMessage(response); renderSuggestions(getFollowUpSuggestions()); }, delay);
+}
+
+function handleKey(e) { if (e.key==='Enter') sendMessage(); }
+
+function renderSuggestions(suggestions) {
+  document.getElementById('chatSuggestions').innerHTML = suggestions.map(s =>
+    `<div class="suggestion-chip" onclick="sendMessage('${s.replace(/'/g,"\\'")}')">${s}</div>`
+  ).join('');
+}
+
+function getFollowUpSuggestions() {
+  const byCoach = {
+    marcus:["Combien de séries faire ?","Quelle fréquence idéale ?","Comment éviter les blessures ?","Exercice pour les abdos ?"],
+    sarah:["Recette rapide post-workout ?","Que manger à midi ?","Comment gérer les envies ?","L'hydratation c'est important ?"],
+    karim:["Comment rester focus ?","Technique de visualisation ?","Comment gérer la flemme ?","Mon entourage ne me soutient pas"],
+  };
+  return (byCoach[currentCoach]||[]).sort(()=>Math.random()-.5).slice(0,3);
+}
+
+// Auto-open selection modal if no coach selected yet
+window.addEventListener('DOMContentLoaded', () => {
+  if (!CURRENT_COACH) {
+    setTimeout(() => showSelectModal(null), 600);
+  }
+});
+</script>
+{% endblock %}
