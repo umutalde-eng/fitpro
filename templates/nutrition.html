@@ -9,7 +9,7 @@
     <div style="position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:32px;min-height:200px;">
       <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80');background-size:cover;background-position:center;filter:brightness(.25) saturate(1.3);"></div>
       <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(3,3,6,.9) 0%,rgba(139,47,255,.2) 100%);"></div>
-      <div style="position:relative;z-index:1;padding:40px 40px 36px;">
+      <div style="position:relative;z-index:1;padding:clamp(20px,5vw,40px) clamp(18px,5vw,40px) 28px;">
         <div style="display:inline-block;background:linear-gradient(135deg,#8b2fff,#ff2d9b);color:#fff;padding:4px 14px;border-radius:50px;font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">🥗 Plan Nutrition</div>
         <h1 style="font-size:2rem;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:8px;">TON PLAN ALIMENTAIRE<br><span style="color:#ff2d9b;">SEMAINE PAR SEMAINE</span></h1>
         <p style="color:rgba(255,255,255,.55);font-size:.9rem;max-width:520px;">Repas détaillés, quantités précises, liste de courses et conseils de préparation — tout ce dont tu as besoin pour atteindre ton objectif.</p>
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Macro Overview -->
-    <div id="macroOverview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;"></div>
+    <div id="macroOverview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px;"></div>
 
     <!-- Week Tabs -->
     <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;" id="weekTabs"></div>
@@ -158,9 +158,9 @@ function renderWeek(i) {
 
   container.innerHTML = `
     <!-- Week Header Card -->
-    <div style="background:var(--card);border:1px solid rgba(139,47,255,.2);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;">
+    <div style="background:var(--card);border:1px solid rgba(139,47,255,.2);border-radius:var(--radius);padding:20px clamp(16px,4vw,28px);margin-bottom:20px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-        <div style="flex:1;min-width:240px;">
+        <div style="flex:1;min-width:0;">
           <div style="font-size:.62rem;font-weight:800;color:#8b2fff;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;">📅 SEMAINE ${week.week}</div>
           <h2 style="font-size:1.4rem;font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:8px;">${week.theme}</h2>
           <p style="color:rgba(255,255,255,.6);font-size:.88rem;line-height:1.5;">${week.intro}</p>
@@ -179,9 +179,9 @@ function renderWeek(i) {
     </div>
 
     <!-- Shopping List -->
-    <div id="shoppingList" style="display:none;background:rgba(0,229,160,.04);border:1px solid rgba(0,229,160,.15);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;">
+    <div id="shoppingList" style="display:none;background:rgba(0,229,160,.04);border:1px solid rgba(0,229,160,.15);border-radius:var(--radius);padding:20px clamp(16px,4vw,28px);margin-bottom:20px;">
       <h3 style="font-size:.75rem;font-weight:800;color:#00e5a0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">🛒 Liste de courses – Semaine ${week.week}</h3>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;">
+      <div class="shopping-grid" style="display:grid;gap:10px;">
         ${week.shopping_list.map(item => `
           <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.85rem;" onclick="this.querySelector('span.cb').classList.toggle('checked')">
             <span class="cb" style="width:18px;height:18px;border:1.5px solid rgba(0,229,160,.4);border-radius:4px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;"></span>
@@ -191,7 +191,7 @@ function renderWeek(i) {
     </div>
 
     <!-- Meal Prep Tips -->
-    <div id="prepTips" style="display:none;background:rgba(255,45,155,.04);border:1px solid rgba(255,45,155,.12);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;">
+    <div id="prepTips" style="display:none;background:rgba(255,45,155,.04);border:1px solid rgba(255,45,155,.12);border-radius:var(--radius);padding:20px clamp(16px,4vw,28px);margin-bottom:20px;">
       <h3 style="font-size:.75rem;font-weight:800;color:#ff2d9b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">⚡ Conseils Meal Prep</h3>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${week.prep_tips.map((tip, ti) => `
@@ -270,14 +270,14 @@ function renderDay(di) {
     </div>
 
     <!-- Meals Grid -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-bottom:24px;">
+    <div class="meals-grid" style="display:grid;gap:16px;margin-bottom:24px;">
       ${meals.map(k => renderMealCard(k, day[k])).join('')}
     </div>
 
     <!-- Kcal Distribution -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;">
       <div style="font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">📊 Répartition calorique du jour</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+      <div class="kcal-dist-grid" style="display:grid;gap:12px;">
         ${meals.map(k => {
           const c = MEAL_COLORS[k];
           const kcal = day[k]?.kcal || 0;

@@ -15,8 +15,22 @@ document.addEventListener('keydown', e => {
 
 // ─── Nav toggle ────────────────────────────────────────────────────────────────
 function toggleMenu() {
-  document.querySelector('.nav-links').classList.toggle('open');
+  const links = document.getElementById('navLinks');
+  const toggle = document.getElementById('navToggle');
+  links.classList.toggle('open');
+  toggle.classList.toggle('open');
 }
+function closeMenu() {
+  const links = document.getElementById('navLinks');
+  const toggle = document.getElementById('navToggle');
+  if (links) links.classList.remove('open');
+  if (toggle) toggle.classList.remove('open');
+}
+// Fermer le menu si on clique en dehors
+document.addEventListener('click', function(e) {
+  const nav = document.querySelector('.navbar');
+  if (nav && !nav.contains(e.target)) closeMenu();
+});
 
 // ─── Login ─────────────────────────────────────────────────────────────────────
 async function handleLogin(e) {

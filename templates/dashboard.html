@@ -80,7 +80,7 @@
     <div style="grid-column:1/-1;position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid rgba({{ '255,45,155' if user.selected_coach=='marcus' else ('0,229,160' if user.selected_coach=='sarah' else '139,47,255') }},.3);background:rgba({{ '255,45,155' if user.selected_coach=='marcus' else ('0,229,160' if user.selected_coach=='sarah' else '139,47,255') }},.04);">
       <div style="position:absolute;right:0;top:0;bottom:0;width:200px;background-image:url('{{ c.photo }}');background-size:cover;background-position:center top;"></div>
       <div style="position:absolute;right:0;top:0;bottom:0;width:260px;background:linear-gradient(90deg,rgba(3,3,6,1) 0%,rgba(3,3,6,.3) 100%);"></div>
-      <div style="position:relative;z-index:1;padding:24px 28px;display:flex;align-items:center;gap:20px;">
+      <div style="position:relative;z-index:1;padding:16px clamp(14px,4vw,28px);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <img src="{{ c.photo }}" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid {{ c.color }};flex-shrink:0;">
         <div style="flex:1;">
           <div style="font-size:.65rem;font-weight:800;color:{{ c.color }};letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;">{{ c.icon }} Mon Coach</div>
@@ -94,7 +94,7 @@
       </div>
     </div>
     {% else %}
-    <div style="grid-column:1/-1;background:rgba(255,45,155,.04);border:1px dashed rgba(255,45,155,.2);border-radius:var(--radius);padding:24px 28px;display:flex;align-items:center;gap:16px;">
+    <div style="grid-column:1/-1;background:rgba(255,45,155,.04);border:1px dashed rgba(255,45,155,.2);border-radius:var(--radius);padding:16px clamp(14px,4vw,28px);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div style="font-size:2rem;">👤</div>
       <div style="flex:1;">
         <div style="font-weight:800;font-style:italic;text-transform:uppercase;margin-bottom:4px;">Aucun coach sélectionné</div>
@@ -135,7 +135,7 @@
       <div style="grid-column:1/-1;position:relative;border-radius:var(--radius);overflow:hidden;min-height:220px;">
         <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80');background-size:cover;background-position:center;filter:brightness(.2) saturate(1.2);"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(3,3,6,.95) 0%,rgba(255,45,155,.15) 100%);"></div>
-        <div style="position:relative;z-index:1;padding:40px;text-align:center;">
+        <div style="position:relative;z-index:1;padding:clamp(24px,6vw,40px);text-align:center;">
           <div style="font-size:2.5rem;margin-bottom:12px;">🔓</div>
           <h3 style="font-size:1.5rem;font-weight:900;margin-bottom:8px;letter-spacing:-.02em;font-style:italic;text-transform:uppercase;">DÉBLOQUE LES 4 SEMAINES</h3>
           <p style="color:rgba(255,255,255,.55);margin-bottom:28px;font-size:.9rem;">Semaines 2, 3 et 4 + suivi avancé + plan nutrition complet</p>

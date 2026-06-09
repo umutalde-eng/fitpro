@@ -1,12 +1,26 @@
 /* ─── Reset & Base ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body {
   font-family: 'Inter', sans-serif;
   background: #030306;
   color: #e8eaf6;
   min-height: 100vh;
   overflow-x: hidden;
+}
+/* Grids responsive via classes */
+.meals-grid         { grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
+.kcal-dist-grid     { grid-template-columns: repeat(4, 1fr); }
+.shopping-grid      { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.video-section-grid { grid-template-columns: 220px 1fr; gap: 60px; align-items: center; }
+@media (max-width: 900px) {
+  .video-section-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+@media (max-width: 600px) {
+  .meals-grid     { grid-template-columns: 1fr !important; }
+  .kcal-dist-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .shopping-grid  { grid-template-columns: 1fr !important; }
+  .video-section-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
 }
 a { text-decoration: none; color: inherit; }
 input, textarea, select { font-family: inherit; }
@@ -82,7 +96,34 @@ input, textarea, select { font-family: inherit; }
   text-transform: uppercase; letter-spacing: .05em;
 }
 .nav-link:hover { color: #fff; background: rgba(255,255,255,.06); }
-.nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+/* Hamburger button */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  width: 40px; height: 40px;
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s;
+}
+.nav-toggle:hover { background: rgba(255,45,155,.1); border-color: rgba(255,45,155,.3); }
+.hamburger-line {
+  display: block;
+  width: 18px; height: 2px;
+  background: #e8eaf6;
+  border-radius: 2px;
+  transition: transform .3s, opacity .3s, width .3s;
+  transform-origin: center;
+}
+/* Animated X when open */
+.nav-toggle.open .hamburger-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open .hamburger-line:nth-child(2) { opacity: 0; width: 0; }
+.nav-toggle.open .hamburger-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 /* ─── Buttons ──────────────────────────────────────────────── */
 .btn-primary {
@@ -946,6 +987,24 @@ footer {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── Responsive inline helpers ───────────────────────────────── */
+/* Allows JS-rendered grids to be overridden on mobile via CSS */
+@media (max-width: 600px) {
+  /* Macro overview 4 cols → 2 cols */
+  #macroOverview { grid-template-columns: repeat(2,1fr) !important; }
+  /* Nutrition day meal cards */
+  #dayContent > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+  /* Kcal bar 4 cols → 2 cols */
+  #dayContent > div:last-child > div[style*="grid-template-columns:repeat(4"] { grid-template-columns: repeat(2,1fr) !important; }
+  /* Shopping list */
+  #shoppingList > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+  /* Coach card on dashboard */
+  .dashboard-grid > div[style*="grid-column:1/-1"] > div[style*="position:relative"] { overflow: hidden; }
+  /* Hero nutrition padding */
+  .page-container > div[style*="min-height:200px"] > div[style*="position:relative;z-index:1"] { padding: 24px 18px 20px !important; }
+  .page-container > div[style*="min-height:200px"] h1 { font-size: 1.4rem !important; }
+}
+
 /* ─── Day tracker ──────────────────────────────────────────── */
 .day-pill {
   width: 44px; height: 72px; border-radius: 22px;
@@ -963,18 +1022,237 @@ footer {
   background: rgba(0,229,160,.08); border-color: rgba(0,229,160,.2); color: var(--green);
 }
 
-/* ─── Responsive ───────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .nav-links { display: none; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: rgba(8,14,28,.95); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); padding: 16px; gap: 4px; }
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile-first breakpoints
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Tablet : ≤ 900px ───────────────────────────────────────── */
+@media (max-width: 900px) {
+
+  /* Navbar */
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 64px; left: 0; right: 0;
+    background: rgba(3,3,6,.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,45,155,.15);
+    padding: 20px 20px 28px;
+    gap: 6px;
+    z-index: 99;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  }
   .nav-links.open { display: flex; }
+  .nav-links .nav-link {
+    padding: 13px 18px;
+    font-size: .9rem;
+    border-radius: 12px;
+    color: var(--text);
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .nav-links .nav-link:last-of-type { border-bottom: none; }
+  .nav-links .btn-ghost,
+  .nav-links .btn-primary,
+  .nav-links .fz-btn-primary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    margin-top: 8px;
+  }
   .nav-toggle { display: block; }
+
+  /* Page container */
+  .page-container { padding: 28px 16px; }
+
+  /* Hero */
   .hero-content { padding: 90px 20px 40px; }
-  .hero h1 { font-size: 2.8rem; }
-  .choice-grid { grid-template-columns: 1fr; }
-  .macro-grid { grid-template-columns: 1fr; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .modal-box { padding: 28px 20px; margin: 16px; }
-  .pricing-grid { grid-template-columns: 1fr; }
-  .cta-section { margin: 0 16px 60px; padding: 48px 24px; }
+  .hero h1 { font-size: 2.4rem; }
+  .hero p { font-size: .95rem; }
+
+  /* Dash hero */
+  .dash-hero-content { padding: 22px 20px; }
+  .dash-hero-content h2 { font-size: 1.2rem; }
+
+  /* Stats */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stat-value { font-size: 1.8rem; }
+
+  /* Dashboard grid */
+  .dashboard-grid { grid-template-columns: 1fr; }
+
+  /* Macro grid */
+  .macro-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Pricing */
+  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
+
+  /* CTA */
+  .cta-section { margin: 0 12px 60px; padding: 48px 24px; }
+
+  /* Week tabs scrollable */
+  .week-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+  .week-tab { flex-shrink: 0; }
+
+  /* FitZone home */
+  .fz-stats-float { display: none; }
+  .fz-hero-content { padding: 100px 24px 60px; max-width: 100%; }
+  .fz-hero-title { font-size: clamp(2.4rem, 8vw, 4rem); }
+  .fz-programs-grid { grid-template-columns: 1fr; }
+  .fz-program-card { height: 300px; }
+  .fz-video-area { grid-template-columns: 1fr; }
+  .fz-video-list { flex-direction: row; flex-wrap: wrap; }
+  .fz-join-section { grid-template-columns: 1fr; }
+  .fz-join-photo { height: 260px; }
+  .fz-join-content { padding: 40px 24px; }
+  .fz-trust-row { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .fz-container { padding: 0 20px; }
+  .fz-section { padding: 60px 0; }
+  .fz-email-row { flex-direction: column; }
+  .fz-email-row .fz-btn-primary { width: 100%; }
+
+  /* Modal */
+  .modal { align-items: flex-end; }
+  .modal-box {
+    border-radius: 24px 24px 0 0;
+    padding: 28px 20px 36px;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Toast */
+  .toast-container { left: 16px; right: 16px; bottom: 20px; }
+  .toast { max-width: 100%; }
+}
+
+/* ── Mobile : ≤ 600px ───────────────────────────────────────── */
+@media (max-width: 600px) {
+
+  /* Navbar */
+  .nav-container { padding: 0 16px; }
+  .nav-logo { font-size: 1.1rem; }
+
+  /* Page */
+  .page-container { padding: 20px 14px; }
+  .page-header h1 { font-size: 1.5rem; }
+
+  /* Hero */
+  .hero-content { padding: 80px 16px 32px; }
+  .hero h1 { font-size: 2rem; }
+  .hero-cta { flex-direction: column; }
+  .hero-cta > * { width: 100%; text-align: center; justify-content: center; }
   .hero-stats-row { gap: 8px; }
+  .hero-stat-pill { padding: 12px 16px; }
+  .hero-stat-pill strong { font-size: 1.1rem; }
+
+  /* Dashboard */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 16px 14px; }
+  .stat-value { font-size: 1.6rem; }
+  .stat-icon { font-size: 1.2rem; margin-bottom: 8px; }
+  .stat-label { font-size: .68rem; }
+
+  /* Dash hero */
+  .dash-hero { min-height: 140px; }
+  .dash-hero-content { padding: 18px 16px; }
+  .dash-hero-content h2 { font-size: 1.05rem; }
+
+  /* Cards */
+  .card { padding: 18px 16px; }
+
+  /* Coach card in dashboard */
+  .dashboard-grid [style*="grid-column:1/-1"] {
+    overflow: hidden;
+  }
+
+  /* Stats grid nutrition macros */
+  #macroOverview { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+
+  /* Week/day tabs — scroll horizontal */
+  #weekTabs, #dayTabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    gap: 6px !important;
+    scrollbar-width: none;
+  }
+  #weekTabs::-webkit-scrollbar,
+  #dayTabs::-webkit-scrollbar { display: none; }
+  #weekTabs button, #dayTabs button { flex-shrink: 0; }
+
+  /* Day pills */
+  .day-pill { width: 38px; height: 60px; font-size: .62rem; }
+
+  /* Program exercise rows */
+  .exercise-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .exercise-sets, .exercise-rest { text-align: left; }
+
+  /* Session header */
+  .session-header { padding: 14px 16px; }
+  .session-header h3 { font-size: .9rem; }
+  .session-meta { gap: 6px; }
+  .tag { font-size: .65rem; padding: 3px 9px; }
+
+  /* Session body */
+  .session-body { padding: 0 16px 16px; }
+
+  /* Onboarding / Quiz */
+  .quiz-form-side { padding: 80px 16px 32px; }
+  .quiz-step h2 { font-size: 1.5rem; }
+  .choice-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .choice-card { padding: 16px 10px; }
+  .choice-card .choice-icon { font-size: 1.6rem; }
+  .choice-card .choice-label { font-size: .82rem; }
+
+  /* Meal cards */
+  #dayContent [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Kcal distribution grid */
+  #dayContent [style*="repeat(4,1fr)"] {
+    grid-template-columns: repeat(2,1fr) !important;
+  }
+
+  /* Modals */
+  .modal-box { padding: 24px 16px 32px; }
+  .modal-box h2 { font-size: 1.3rem; margin-bottom: 20px; }
+
+  /* Pricing */
+  .pricing-card { padding: 28px 20px; }
+  .pricing-price { font-size: 2.8rem; }
+
+  /* Nutrition hero */
+  .page-container > div[style*="padding:40px"] { padding: 24px 20px 20px !important; }
+
+  /* Progress bar day label */
+  #weekDays { gap: 5px; }
+
+  /* FitZone hero */
+  .fz-hero-content { padding: 90px 16px 48px; }
+  .fz-hero-title { font-size: clamp(2rem, 9vw, 3rem); }
+  .fz-hero-cta { flex-direction: column; }
+  .fz-hero-cta > * { width: 100%; text-align: center; }
+  .fz-features-row { flex-direction: column; gap: 16px; }
+  .fz-section-header h2 { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+  .fz-bg-text { font-size: 30vw; }
+
+  /* Join section */
+  .fz-join-content { padding: 32px 16px; }
+  .fz-email-row { flex-direction: column; gap: 10px; }
+  .fz-email-input { border-radius: 12px; }
+
+  /* Lock overlay */
+  .lock-overlay { padding: 32px 20px; }
+  .lock-overlay h3 { font-size: 1.15rem; }
+
+  /* Misc */
+  .btn-primary, .fz-btn-primary { padding: 12px 22px; font-size: .8rem; }
+  .btn-ghost { padding: 10px 20px; font-size: .78rem; }
+  section.section-full { padding: 48px 16px; }
 }

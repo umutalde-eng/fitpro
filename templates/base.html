@@ -15,21 +15,25 @@
 <nav class="navbar">
   <div class="nav-container">
     <a href="/" class="nav-logo">⚡ FitPro</a>
-    <div class="nav-links">
+    <div class="nav-links" id="navLinks">
       {% if session.get('user_email') %}
-        <a href="/dashboard" class="nav-link">Dashboard</a>
-        <a href="/program" class="nav-link">Programme</a>
-        <a href="/nutrition" class="nav-link">Nutrition</a>
-        <a href="/coaches" class="nav-link" style="color:#ff2d9b;position:relative;">Coaches <span style="position:absolute;top:-4px;right:-6px;width:7px;height:7px;background:#ff2d9b;border-radius:50%;animation:pulse-dot 1.5s infinite;"></span></a>
-        <a href="/progress" class="nav-link">Progrès</a>
+        <a href="/dashboard" class="nav-link" onclick="closeMenu()">Dashboard</a>
+        <a href="/program" class="nav-link" onclick="closeMenu()">Programme</a>
+        <a href="/nutrition" class="nav-link" onclick="closeMenu()">Nutrition</a>
+        <a href="/coaches" class="nav-link" onclick="closeMenu()" style="color:#ff2d9b;position:relative;">Coaches <span style="position:absolute;top:-4px;right:-6px;width:7px;height:7px;background:#ff2d9b;border-radius:50%;animation:pulse-dot 1.5s infinite;"></span></a>
+        <a href="/progress" class="nav-link" onclick="closeMenu()">Progrès</a>
         <button onclick="logout()" class="btn-ghost">Déconnexion</button>
       {% else %}
-        <a href="/pricing" class="nav-link">Tarifs</a>
-        <button onclick="openModal('loginModal')" class="btn-ghost">Connexion</button>
-        <a href="/onboarding" class="btn-primary">Commencer</a>
+        <a href="/pricing" class="nav-link" onclick="closeMenu()">Tarifs</a>
+        <button onclick="openModal('loginModal');closeMenu();" class="btn-ghost">Connexion</button>
+        <a href="/onboarding" class="btn-primary" onclick="closeMenu()">Commencer</a>
       {% endif %}
     </div>
-    <button class="nav-toggle" onclick="toggleMenu()">☰</button>
+    <button class="nav-toggle" id="navToggle" onclick="toggleMenu()" aria-label="Menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
   </div>
 </nav>
 {% endblock %}
