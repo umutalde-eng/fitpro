@@ -5,6 +5,59 @@
 <div class="page-wrapper">
   <div class="page-container">
 
+{% if user.subscription != 'premium' %}
+    <!-- ══ MUR PREMIUM ══════════════════════════════════════════ -->
+    <div style="position:relative;border-radius:var(--radius);overflow:hidden;min-height:520px;margin-top:8px;">
+      <!-- Background -->
+      <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80');background-size:cover;background-position:center;filter:brightness(.18) saturate(1.3);"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(3,3,6,.97) 0%,rgba(139,47,255,.18) 60%,rgba(255,45,155,.1) 100%);"></div>
+
+      <!-- Blur preview cards (décoratif) -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:min(460px,90%);opacity:.18;filter:blur(3px);transform:scale(.95);">
+          {% for meal, icon in [('Petit-déjeuner','🌅'),('Déjeuner','☀️'),('Collation','🍎'),('Dîner','🌙')] %}
+          <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;">
+            <div style="font-size:1.2rem;margin-bottom:6px;">{{ icon }}</div>
+            <div style="font-size:.7rem;font-weight:800;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">{{ meal }}</div>
+            <div style="height:8px;background:rgba(255,255,255,.15);border-radius:4px;margin-bottom:4px;"></div>
+            <div style="height:6px;background:rgba(255,255,255,.08);border-radius:4px;width:70%;"></div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Lock content -->
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:520px;padding:40px clamp(16px,5vw,40px);text-align:center;">
+        <div style="background:linear-gradient(135deg,rgba(255,45,155,.15),rgba(139,47,255,.1));border:1px solid rgba(255,45,155,.25);border-radius:20px;padding:clamp(28px,5vw,48px) clamp(20px,5vw,48px);max-width:520px;width:100%;backdrop-filter:blur(20px);">
+          <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+          <div style="font-size:.65rem;font-weight:800;color:#ff2d9b;letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px;">Contenu Premium</div>
+          <h2 style="font-size:clamp(1.4rem,4vw,2rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:10px;">PLAN NUTRITION<br><span style="background:linear-gradient(90deg,#ff2d9b,#8b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">COMPLET</span></h2>
+          <p style="color:rgba(255,255,255,.55);font-size:.9rem;line-height:1.6;margin-bottom:28px;">Accède aux 4 semaines de repas détaillés, liste de courses, conseils meal prep et bien plus. Tout ce dont tu as besoin pour atteindre ton objectif.</p>
+
+          <!-- Features list -->
+          <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:28px;">
+            {% for feat in [
+              ('🥗', '4 semaines de plans nutritionnels complets'),
+              ('📅', '28 jours × 4 repas détaillés avec quantités'),
+              ('🛒', 'Liste de courses hebdomadaire interactive'),
+              ('⚡', 'Conseils meal prep pour gagner du temps'),
+              ('📊', 'Suivi calorique et macros journaliers'),
+            ] %}
+            <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;">
+              <span style="font-size:1rem;flex-shrink:0;">{{ feat[0] }}</span>
+              <span style="color:rgba(255,255,255,.8);">{{ feat[1] }}</span>
+            </div>
+            {% endfor %}
+          </div>
+
+          <a href="/pricing" class="fz-btn-primary" style="display:block;width:100%;font-size:.92rem;padding:15px;">Passer Premium · 14,90€/mois</a>
+          <div style="margin-top:14px;font-size:.78rem;color:rgba(255,255,255,.3);">✓ Sans engagement &nbsp;·&nbsp; ✓ Annulation facile &nbsp;·&nbsp; ✓ Accès immédiat</div>
+        </div>
+      </div>
+    </div>
+
+{% else %}
+    <!-- ══ CONTENU PREMIUM ═══════════════════════════════════════ -->
     <!-- Hero -->
     <div style="position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:32px;min-height:200px;">
       <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80');background-size:cover;background-position:center;filter:brightness(.25) saturate(1.3);"></div>
@@ -38,7 +91,10 @@
   </div>
 </div>
 
-<!-- Premium Lock Modal -->
+{% endif %}
+
+<!-- Premium Lock Modal (inutilisé pour les gratuits mais gardé pour la structure) -->
+{% if user.subscription == 'premium' %}
 <div id="premiumModal" class="modal hidden">
   <div class="modal-overlay" onclick="closeModal('premiumModal')"></div>
   <div class="modal-box" style="text-align:center;padding:40px 32px;">
@@ -59,11 +115,13 @@
     <button onclick="closeModal('premiumModal')" style="margin-top:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;">Non merci, rester gratuit</button>
   </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
+{% if user.subscription == 'premium' %}
 <script>
-const IS_PREMIUM = {{ 'true' if user.subscription == 'premium' else 'false' }};
+const IS_PREMIUM = true;
 let nutritionWeeks = [];
 let currentWeek = 0;
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
@@ -331,4 +389,5 @@ loadNutrition();
 .cb.checked::after { content:'✓'; color:#00e5a0; font-weight:800; }
 .cb.checked { background:rgba(0,229,160,.12); border-color:#00e5a0 !important; }
 </style>
+{% endif %}
 {% endblock %}

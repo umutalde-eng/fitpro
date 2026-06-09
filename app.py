@@ -210,14 +210,13 @@ def get_program_api():
     program = user["program"]
 
     if not is_premium:
-        # Free users see week 1 only
+        # Free users see week 1 workout only, no nutrition weeks
         limited = dict(program["workout"])
         limited["weeks"] = program["workout"]["weeks"][:1]
-        nutrition_weeks = program.get("nutrition_weeks", [])
         return jsonify({
             "workout": limited,
             "nutrition": program["nutrition"],
-            "nutrition_weeks": nutrition_weeks[:1],
+            "nutrition_weeks": [],
             "is_premium": False,
             "locked_weeks": len(program["workout"]["weeks"]) - 1
         })

@@ -116,7 +116,11 @@
         <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">⚡ Actions rapides</h3>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <a href="/program" class="btn-primary full-width">Voir mon programme</a>
+          {% if user.subscription == 'premium' %}
           <a href="/nutrition" class="btn-ghost full-width" style="text-align:center;display:block;">Plan nutrition</a>
+          {% else %}
+          <a href="/nutrition" class="btn-ghost full-width" style="text-align:center;display:block;">🔒 Plan nutrition <span style="font-size:.7rem;color:#ff2d9b;font-weight:800;">PREMIUM</span></a>
+          {% endif %}
           <button onclick="openModal('progressModal')" class="btn-ghost full-width">+ Enregistrer mon poids</button>
         </div>
       </div>
