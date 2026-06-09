@@ -3,112 +3,332 @@
 
 {% block content %}
 <div class="page-wrapper">
-  <!-- Nutrition Hero -->
-  <div style="position:relative;height:200px;overflow:hidden;background:#030306;">
-    <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1547592180-85f173990554?w=1400&q=80');background-size:cover;background-position:center;filter:brightness(.18) saturate(1.2);"></div>
-    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,3,6,.97) 0%,rgba(0,229,160,.08) 100%);"></div>
-    <div style="position:relative;z-index:1;height:100%;display:flex;align-items:flex-end;padding:0 40px 32px;max-width:1100px;margin:0 auto;">
-      <div>
-        <div style="font-size:.7rem;font-weight:800;color:#00e5a0;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">MON PLAN</div>
-        <h1 style="font-size:2.2rem;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;">PLAN <span style="background:linear-gradient(90deg,#00e5a0,#00c6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">NUTRITIONNEL</span></h1>
-        <p id="nutritionSubtitle" style="color:#666;font-size:.85rem;margin-top:4px;">Chargement...</p>
+  <div class="page-container">
+
+    <!-- Hero -->
+    <div style="position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:32px;min-height:200px;">
+      <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80');background-size:cover;background-position:center;filter:brightness(.25) saturate(1.3);"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(3,3,6,.9) 0%,rgba(139,47,255,.2) 100%);"></div>
+      <div style="position:relative;z-index:1;padding:40px 40px 36px;">
+        <div style="display:inline-block;background:linear-gradient(135deg,#8b2fff,#ff2d9b);color:#fff;padding:4px 14px;border-radius:50px;font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">🥗 Plan Nutrition</div>
+        <h1 style="font-size:2rem;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:8px;">TON PLAN ALIMENTAIRE<br><span style="color:#ff2d9b;">SEMAINE PAR SEMAINE</span></h1>
+        <p style="color:rgba(255,255,255,.55);font-size:.9rem;max-width:520px;">Repas détaillés, quantités précises, liste de courses et conseils de préparation — tout ce dont tu as besoin pour atteindre ton objectif.</p>
+        {% if user.profile %}
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+          <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:600;">
+            {% if user.profile.goal == 'perte_poids' %}🔥 Perte de poids
+            {% elif user.profile.goal == 'prise_masse' %}💪 Prise de masse
+            {% else %}✨ Tonification{% endif %}
+          </span>
+          <span id="heroCalories" style="background:rgba(255,45,155,.12);border:1px solid rgba(255,45,155,.2);padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:600;color:#ff2d9b;">Chargement...</span>
+        </div>
+        {% endif %}
       </div>
     </div>
-  </div>
 
-  <div class="page-container">
-    <div id="nutritionContent"></div>
+    <!-- Macro Overview -->
+    <div id="macroOverview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;"></div>
+
+    <!-- Week Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;" id="weekTabs"></div>
+
+    <!-- Week Content -->
+    <div id="weekContent"></div>
+
+  </div>
+</div>
+
+<!-- Premium Lock Modal -->
+<div id="premiumModal" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('premiumModal')"></div>
+  <div class="modal-box" style="text-align:center;padding:40px 32px;">
+    <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+    <h2 style="font-size:1.4rem;font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:8px;">Contenu Premium</h2>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:24px;">Les semaines 2, 3 et 4 sont réservées aux membres Premium. Débloque le plan nutritionnel complet sur 4 semaines !</p>
+    <div style="background:rgba(255,45,155,.06);border:1px solid rgba(255,45,155,.2);border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="font-size:.8rem;color:#ff2d9b;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">✨ Inclus dans Premium</div>
+      <div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
+        <div style="font-size:.85rem;">✅ 4 semaines de repas détaillés jour par jour</div>
+        <div style="font-size:.85rem;">✅ 28 jours × 4 repas = 112 repas planifiés</div>
+        <div style="font-size:.85rem;">✅ Listes de courses hebdomadaires</div>
+        <div style="font-size:.85rem;">✅ Conseils de meal prep</div>
+        <div style="font-size:.85rem;">✅ Programme d'entraînement 4 semaines complet</div>
+      </div>
+    </div>
+    <a href="/pricing" class="fz-btn-primary" style="display:block;width:100%;box-sizing:border-box;">Passer Premium · 14,90€/mois</a>
+    <button onclick="closeModal('premiumModal')" style="margin-top:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;">Non merci, rester gratuit</button>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+const IS_PREMIUM = {{ 'true' if user.subscription == 'premium' else 'false' }};
+let nutritionWeeks = [];
+let currentWeek = 0;
+const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const MEAL_ICONS = { petit_dejeuner:"🌅", dejeuner:"☀️", collation:"🍎", diner:"🌙" };
+const MEAL_LABELS = { petit_dejeuner:"Petit-déjeuner", dejeuner:"Déjeuner", collation:"Collation", diner:"Dîner" };
+const MEAL_COLORS = {
+  petit_dejeuner: { border:'rgba(255,45,155,.25)',  bg:'rgba(255,45,155,.04)',  color:'#ff2d9b' },
+  dejeuner:       { border:'rgba(139,47,255,.25)',  bg:'rgba(139,47,255,.04)',  color:'#8b2fff' },
+  collation:      { border:'rgba(0,229,160,.25)',   bg:'rgba(0,229,160,.04)',   color:'#00e5a0' },
+  diner:          { border:'rgba(245,158,11,.25)',  bg:'rgba(245,158,11,.04)',  color:'#f59e0b' },
+};
+
 async function loadNutrition() {
   const r = await fetch('/api/get-program');
-  if (!r.ok) { window.location.href = '/onboarding'; return; }
-  const data = await r.json();
-  const n = data.nutrition;
-  document.getElementById('nutritionSubtitle').textContent = n.name;
-
-  let html = `
-  <div class="card mb-24" style="margin-bottom:24px;border-left:3px solid #ff2d9b;">
-    <div style="font-size:.7rem;font-weight:800;color:#ff2d9b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">OBJECTIF CALORIQUE</div>
-    <p style="color:#e0e0e0;font-weight:800;font-size:1.4rem;font-style:italic;">${n.calories_target}</p>
-  </div>
-
-  <div class="macro-grid" style="margin-bottom:24px;">
-    <div class="macro-card" style="border-top:3px solid #8b2fff;">
-      <div class="macro-pct" style="color:#b96fff;">${n.macro_split.proteines}</div>
-      <div class="macro-label">Protéines</div>
-    </div>
-    <div class="macro-card" style="border-top:3px solid #ff2d9b;">
-      <div class="macro-pct" style="color:#ff2d9b;">${n.macro_split.glucides}</div>
-      <div class="macro-label">Glucides</div>
-    </div>
-    <div class="macro-card" style="border-top:3px solid #00e5a0;">
-      <div class="macro-pct" style="color:#00e5a0;">${n.macro_split.lipides}</div>
-      <div class="macro-label">Lipides</div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:24px;border-left:3px solid #00e5a0;">
-    <div style="font-size:.7rem;font-weight:800;color:#00e5a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">✅ PRINCIPES CLÉS</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-    ${n.principles.map(p => `
-      <div style="display:flex;align-items:flex-start;gap:12px;font-size:.9rem;">
-        <span style="color:#ff2d9b;flex-shrink:0;margin-top:2px;font-weight:800;">→</span>
-        <span style="color:#ccc;">${p}</span>
-      </div>`).join('')}
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:24px;">
-    <div style="font-size:.7rem;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">🍽️ IDÉES REPAS</div>
-    <div class="meal-tabs" id="mealTabs">`;
-
-  const meals = Object.keys(n.meal_plan);
-  const mealIcons = { 'Petit-déjeuner': '☀️', 'Déjeuner': '🌤️', 'Dîner': '🌙', 'Collation': '🍎' };
-  meals.forEach((m, i) => {
-    html += `<div class="meal-tab${i === 0 ? ' active' : ''}" onclick="selectMeal(this,'meal-${i}')">${mealIcons[m] || '🍽️'} ${m}</div>`;
-  });
-
-  html += `</div><div id="mealContent">`;
-
-  meals.forEach((m, i) => {
-    html += `<div class="meal-options" id="meal-${i}" style="${i !== 0 ? 'display:none' : ''}">`;
-    n.meal_plan[m].forEach((option, j) => {
-      html += `<div class="meal-option">
-        <div class="meal-num">${j+1}</div>
-        <div style="font-size:.9rem;line-height:1.5;color:#ccc;">${option}</div>
+  if (!r.ok) {
+    document.getElementById('weekContent').innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:3rem;margin-bottom:16px;">🥗</div>
+        <h3 style="font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:8px;">Configure ton profil d'abord</h3>
+        <p style="color:var(--muted);margin-bottom:24px;">Réponds au quiz pour obtenir ton plan nutritionnel personnalisé.</p>
+        <a href="/onboarding" class="btn-primary">Compléter mon profil →</a>
       </div>`;
-    });
-    html += `</div>`;
-  });
-
-  html += `</div></div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div class="card" style="border-left:3px solid rgba(255,107,107,.6);">
-      <div style="font-size:.7rem;font-weight:800;color:#ff6584;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">❌ À ÉVITER</div>
-      ${n.foods_to_avoid.map(f => `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.875rem;color:var(--muted);">${f}</div>`).join('')}
-    </div>
-    <div class="card" style="border-left:3px solid rgba(0,229,160,.5);">
-      <div style="font-size:.7rem;font-weight:800;color:#00e5a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">✅ À PRIVILÉGIER</div>
-      ${n.foods_to_favor.map(f => `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.875rem;color:var(--muted);">${f}</div>`).join('')}
-    </div>
-  </div>`;
-
-  document.getElementById('nutritionContent').innerHTML = html;
+    return;
+  }
+  const data = await r.json();
+  nutritionWeeks = data.nutrition_weeks || [];
+  if (!nutritionWeeks.length) {
+    document.getElementById('weekContent').innerHTML = '<p style="color:var(--muted);">Plan nutritionnel non disponible.</p>';
+    return;
+  }
+  renderMacroOverview(nutritionWeeks[0]);
+  renderWeekTabs();
+  renderWeek(0);
 }
 
-function selectMeal(el, targetId) {
-  document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('#mealContent > div').forEach(d => d.style.display = 'none');
-  document.getElementById(targetId).style.display = 'flex';
+function renderMacroOverview(week) {
+  const macroCards = [
+    { icon:'🔥', label:'Calories / jour', value: week.calories_day, sub:'objectif calorique', color:'#ff2d9b' },
+    { icon:'🥩', label:'Protéines',        value: week.macros.proteines, sub:'par jour',      color:'#8b2fff' },
+    { icon:'🌾', label:'Glucides',          value: week.macros.glucides,  sub:'par jour',      color:'#00e5a0' },
+    { icon:'🥑', label:'Lipides',           value: week.macros.lipides,   sub:'par jour',      color:'#f59e0b' },
+  ];
+  document.getElementById('macroOverview').innerHTML = macroCards.map(c => `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+      <div style="font-size:1.6rem;margin-bottom:8px;">${c.icon}</div>
+      <div style="font-size:1.1rem;font-weight:900;color:${c.color};font-style:italic;">${c.value}</div>
+      <div style="font-size:.7rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">${c.label}</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">${c.sub}</div>
+    </div>`).join('');
+
+  const heroEl = document.getElementById('heroCalories');
+  if (heroEl) heroEl.textContent = week.calories_day + ' kcal/jour';
+}
+
+function renderWeekTabs() {
+  document.getElementById('weekTabs').innerHTML = nutritionWeeks.map((w, i) => {
+    const locked = !IS_PREMIUM && i > 0;
+    const active = i === 0;
+    return `
+      <button onclick="${locked ? "openModal('premiumModal')" : `switchWeek(${i})`}" id="wtab${i}"
+        style="padding:10px 22px;border-radius:50px;cursor:pointer;transition:all .2s;
+               border:1px solid ${active?'rgba(255,45,155,.5)':'var(--border)'};
+               background:${active?'rgba(255,45,155,.1)':'transparent'};
+               color:${active?'#ff2d9b':'var(--muted)'};
+               font-weight:800;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;
+               display:inline-flex;align-items:center;gap:6px;">
+        ${locked ? '🔒 ' : ''}S${w.week} – ${w.theme}
+      </button>`;
+  }).join('');
+}
+
+function switchWeek(i) {
+  currentWeek = i;
+  nutritionWeeks.forEach((_, idx) => {
+    const t = document.getElementById(`wtab${idx}`);
+    if (!t) return;
+    const locked = !IS_PREMIUM && idx > 0;
+    if (locked) return;
+    const active = idx === i;
+    t.style.border   = active ? '1px solid rgba(255,45,155,.5)' : '1px solid var(--border)';
+    t.style.background = active ? 'rgba(255,45,155,.1)' : 'transparent';
+    t.style.color    = active ? '#ff2d9b' : 'var(--muted)';
+  });
+  renderMacroOverview(nutritionWeeks[i]);
+  renderWeek(i);
+}
+
+function renderWeek(i) {
+  const week = nutritionWeeks[i];
+  window._weekData = week;
+  const container = document.getElementById('weekContent');
+
+  container.innerHTML = `
+    <!-- Week Header Card -->
+    <div style="background:var(--card);border:1px solid rgba(139,47,255,.2);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="flex:1;min-width:240px;">
+          <div style="font-size:.62rem;font-weight:800;color:#8b2fff;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;">📅 SEMAINE ${week.week}</div>
+          <h2 style="font-size:1.4rem;font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:8px;">${week.theme}</h2>
+          <p style="color:rgba(255,255,255,.6);font-size:.88rem;line-height:1.5;">${week.intro}</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="toggleSection('shoppingList')"
+            style="background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);color:#00e5a0;
+                   padding:9px 20px;border-radius:50px;font-weight:700;font-size:.75rem;cursor:pointer;
+                   letter-spacing:.06em;text-transform:uppercase;">🛒 Liste de courses</button>
+          <button onclick="toggleSection('prepTips')"
+            style="background:rgba(255,45,155,.06);border:1px solid rgba(255,45,155,.15);color:#ff2d9b;
+                   padding:9px 20px;border-radius:50px;font-weight:700;font-size:.75rem;cursor:pointer;
+                   letter-spacing:.06em;text-transform:uppercase;">⚡ Meal Prep Tips</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shopping List -->
+    <div id="shoppingList" style="display:none;background:rgba(0,229,160,.04);border:1px solid rgba(0,229,160,.15);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:.75rem;font-weight:800;color:#00e5a0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">🛒 Liste de courses – Semaine ${week.week}</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;">
+        ${week.shopping_list.map(item => `
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.85rem;" onclick="this.querySelector('span.cb').classList.toggle('checked')">
+            <span class="cb" style="width:18px;height:18px;border:1.5px solid rgba(0,229,160,.4);border-radius:4px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;"></span>
+            ${item}
+          </label>`).join('')}
+      </div>
+    </div>
+
+    <!-- Meal Prep Tips -->
+    <div id="prepTips" style="display:none;background:rgba(255,45,155,.04);border:1px solid rgba(255,45,155,.12);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:.75rem;font-weight:800;color:#ff2d9b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">⚡ Conseils Meal Prep</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${week.prep_tips.map((tip, ti) => `
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:rgba(255,45,155,.04);border-radius:8px;">
+            <span style="background:linear-gradient(135deg,#ff2d9b,#8b2fff);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;flex-shrink:0;">${ti+1}</span>
+            <span style="font-size:.88rem;line-height:1.5;">${tip}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Day Navigation -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;" id="dayTabs">
+      ${DAYS.map((d, di) => `
+        <button onclick="switchDay(${di})" id="dtab${di}"
+          style="padding:8px 16px;border-radius:50px;cursor:pointer;transition:all .2s;
+                 border:1px solid ${di===0?'rgba(139,47,255,.5)':'var(--border)'};
+                 background:${di===0?'rgba(139,47,255,.1)':'transparent'};
+                 color:${di===0?'#8b2fff':'var(--muted)'};
+                 font-weight:700;font-size:.75rem;letter-spacing:.04em;text-transform:uppercase;">
+          ${d}
+        </button>`).join('')}
+    </div>
+
+    <!-- Day Content -->
+    <div id="dayContent"></div>
+  `;
+
+  renderDay(0);
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function switchDay(di) {
+  DAYS.forEach((_, idx) => {
+    const t = document.getElementById(`dtab${idx}`);
+    if (!t) return;
+    t.style.border     = idx===di ? '1px solid rgba(139,47,255,.5)' : '1px solid var(--border)';
+    t.style.background = idx===di ? 'rgba(139,47,255,.1)' : 'transparent';
+    t.style.color      = idx===di ? '#8b2fff' : 'var(--muted)';
+  });
+  renderDay(di);
+}
+
+function renderDay(di) {
+  const week = window._weekData;
+  const day  = week.days[di];
+  const container = document.getElementById('dayContent');
+  if (!day) { container.innerHTML = ''; return; }
+
+  const meals = ['petit_dejeuner','dejeuner','collation','diner'];
+  const totalKcal = meals.reduce((sum, k) => sum + (day[k]?.kcal || 0), 0);
+
+  container.innerHTML = `
+    <!-- Day Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+                padding:16px 22px;background:var(--card);border:1px solid var(--border);
+                border-radius:var(--radius);margin-bottom:18px;">
+      <div>
+        <div style="font-size:.62rem;font-weight:800;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px;">${DAYS[di]}</div>
+        <div style="font-size:1rem;font-weight:900;font-style:italic;text-transform:uppercase;">Plan nutritionnel du jour</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:1.4rem;font-weight:900;color:#ff2d9b;">${totalKcal}</div>
+          <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">kcal / jour</div>
+        </div>
+        ${day.tip ? `
+        <div style="background:rgba(139,47,255,.08);border:1px solid rgba(139,47,255,.2);border-radius:8px;
+                    padding:8px 16px;max-width:280px;font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.4;">
+          <span style="color:#8b2fff;font-weight:800;">💡 </span>${day.tip}
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- Meals Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-bottom:24px;">
+      ${meals.map(k => renderMealCard(k, day[k])).join('')}
+    </div>
+
+    <!-- Kcal Distribution -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;">
+      <div style="font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">📊 Répartition calorique du jour</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+        ${meals.map(k => {
+          const c = MEAL_COLORS[k];
+          const kcal = day[k]?.kcal || 0;
+          const pct = totalKcal > 0 ? Math.round(kcal/totalKcal*100) : 0;
+          return `
+            <div style="text-align:center;">
+              <div style="font-size:1.1rem;font-weight:900;color:${c.color};">${kcal}<span style="font-size:.65rem;color:var(--muted);font-weight:400;"> kcal</span></div>
+              <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;margin:8px 0;overflow:hidden;">
+                <div style="width:${pct}%;height:100%;background:${c.color};border-radius:3px;transition:width .5s;"></div>
+              </div>
+              <div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${MEAL_LABELS[k]}</div>
+              <div style="font-size:.75rem;color:${c.color};font-weight:800;margin-top:2px;">${pct}%</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderMealCard(key, data) {
+  if (!data) return '';
+  const c = MEAL_COLORS[key];
+  return `
+    <div style="background:${c.bg};border:1px solid ${c.border};border-radius:var(--radius);padding:20px;
+                display:flex;flex-direction:column;gap:12px;">
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.4rem;">${MEAL_ICONS[key]}</span>
+          <div>
+            <div style="font-size:.6rem;font-weight:800;color:${c.color};letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;">${MEAL_LABELS[key]}</div>
+            <div style="font-size:.95rem;font-weight:900;font-style:italic;text-transform:uppercase;line-height:1.2;">${data.name}</div>
+          </div>
+        </div>
+        <div style="flex-shrink:0;background:${c.border};padding:4px 11px;border-radius:50px;
+                    font-size:.75rem;font-weight:800;color:${c.color};">${data.kcal} kcal</div>
+      </div>
+      <!-- Detail -->
+      ${data.detail ? `
+      <div style="background:rgba(0,0,0,.25);border-radius:8px;padding:12px 14px;">
+        <div style="font-size:.65rem;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;
+                    letter-spacing:.1em;margin-bottom:6px;">📋 Ingrédients & quantités</div>
+        <p style="font-size:.84rem;color:rgba(255,255,255,.78);line-height:1.6;margin:0;">${data.detail}</p>
+      </div>` : ''}
+    </div>`;
 }
 
 loadNutrition();
 </script>
+<style>
+.cb.checked::after { content:'✓'; color:#00e5a0; font-weight:800; }
+.cb.checked { background:rgba(0,229,160,.12); border-color:#00e5a0 !important; }
+</style>
 {% endblock %}
