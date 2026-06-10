@@ -238,7 +238,7 @@ input, textarea, select { font-family: inherit; }
 
 /* ─── HERO ─────────────────────────────────────────────────── */
 .hero {
-  min-height: 100vh; position: relative; overflow: hidden;
+  min-height: 100vh; position: relative; overflow: clip;
   display: flex; flex-direction: column;
 }
 .hero-bg-image {
@@ -319,7 +319,7 @@ input, textarea, select { font-family: inherit; }
 .feature-card {
   background: var(--glass); backdrop-filter: blur(20px);
   border: 1px solid var(--border); border-radius: var(--radius); padding: 28px;
-  transition: all .3s; position: relative; overflow: hidden;
+  transition: all .3s; position: relative; overflow: clip;
 }
 .feature-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -374,7 +374,7 @@ input, textarea, select { font-family: inherit; }
 .stat-card {
   background: var(--glass); backdrop-filter: blur(20px);
   border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 22px 20px; position: relative; overflow: hidden;
+  padding: 22px 20px; position: relative; overflow: clip;
 }
 .stat-card::after {
   content: ''; position: absolute; bottom: -20px; right: -20px;
@@ -407,7 +407,7 @@ input, textarea, select { font-family: inherit; }
 .quiz-wrapper {
   min-height: 100vh; display: flex;
   background: var(--navy);
-  position: relative; overflow: hidden;
+  position: relative; overflow: clip;
 }
 .quiz-bg-image {
   position: absolute; right: 0; top: 0; bottom: 0;
@@ -484,7 +484,7 @@ input, textarea, select { font-family: inherit; }
 .session-card {
   background: var(--glass); backdrop-filter: blur(20px);
   border: 1px solid var(--border); border-radius: var(--radius);
-  overflow: hidden; margin-bottom: 14px; transition: border-color .2s;
+  overflow: clip; margin-bottom: 14px; transition: border-color .2s;
 }
 .session-card:hover { border-color: var(--border2); }
 .session-header {
@@ -519,7 +519,7 @@ input, textarea, select { font-family: inherit; }
 .exercise-rest { color: var(--muted); font-size: .75rem; margin-top: 2px; text-align: right; }
 
 .lock-overlay {
-  border-radius: var(--radius); overflow: hidden;
+  border-radius: var(--radius); overflow: clip;
   border: 1px solid rgba(255,45,155,.15);
   background: linear-gradient(135deg, rgba(255,45,155,.04) 0%, rgba(139,47,255,.03) 100%);
   padding: 48px; text-align: center;
@@ -597,7 +597,7 @@ input, textarea, select { font-family: inherit; }
 
 /* ─── CTA Banner ───────────────────────────────────────────── */
 .cta-section {
-  position: relative; overflow: hidden; border-radius: var(--radius);
+  position: relative; overflow: clip; border-radius: var(--radius);
   padding: 60px 40px; text-align: center; margin: 0 28px 80px;
 }
 .cta-bg {
@@ -1237,7 +1237,9 @@ footer {
 
   /* FitZone hero */
   .fz-hero-content { padding: 90px 16px 48px; }
-  .fz-hero-title { font-size: clamp(2rem, 9vw, 3rem); }
+  .fz-hero-title { font-size: clamp(2rem, 9vw, 3rem); overflow-wrap: break-word; word-break: break-word; }
+  .hero h1, .quiz-step h2, .fz-section-header h2, .page-header h1,
+  .section-header h2, .cta-content h2 { overflow-wrap: break-word; word-break: break-word; }
   .fz-hero-cta { flex-direction: column; }
   .fz-hero-cta > * { width: 100%; text-align: center; }
   .fz-features-row { flex-direction: column; gap: 16px; }
