@@ -106,6 +106,90 @@ def coaches():
     user = get_current_user()
     return render_template("coaches.html", user=user)
 
+@app.route("/settings")
+@login_required
+def settings():
+    user = get_current_user()
+    return render_template("settings.html", user=user)
+
+@app.route("/api/update-account", methods=["POST"])
+@login_required
+def update_account():
+    data = request.json
+    new_name = data.get("name", "").strip()
+    new_email = data.get("email", "").lower().strip()
+    new_password = data.get("password")
+
+    if not new_name or not new_email:
+        return jsonify({"error": "Nom et email requis"}), 400
+
+    users = load_users()
+    old_email = session["user_email"]
+
+    # Email change: check not taken by someone else
+    if new_email != old_email and new_email in users:
+        return jsonify({"error": "Cet email est déjà utilisé"}), 400
+
+    user = users[old_email]
+    user["name"] = new_name
+    if new_password:
+        if len(new_password) < 6:
+            return jsonify({"error": "Mot de passe trop court (6 caractères min)"}), 400
+        user["password"] = hash_password(new_password)
+
+    if new_email != old_email:
+        user["email"] = new_email
+        del users[old_email]
+        users[new_email] = user
+        session["user_email"] = new_email
+    else:
+        users[old_email] = user
+
+    save_users(users)
+    return jsonify({"success": True})
+
+
+@app.route("/api/cancel-subscription", methods=["POST"])
+@login_required
+def cancel_subscription():
+    users = load_users()
+    email = session["user_email"]
+    user = users[email]
+    sub_id = user.get("stripe_subscription_id")
+
+    if stripe.api_key and sub_id:
+        try:
+            stripe.Subscription.cancel(sub_id)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    users[email]["subscription"] = "free"
+    users[email]["stripe_subscription_id"] = None
+    save_users(users)
+    return jsonify({"success": True})
+
+
+@app.route("/api/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    users = load_users()
+    email = session["user_email"]
+    user = users[email]
+
+    # Cancel Stripe subscription if active
+    sub_id = user.get("stripe_subscription_id")
+    if stripe.api_key and sub_id:
+        try:
+            stripe.Subscription.cancel(sub_id)
+        except Exception:
+            pass
+
+    del users[email]
+    save_users(users)
+    session.clear()
+    return jsonify({"success": True})
+
+
 @app.route("/api/select-coach", methods=["POST"])
 @login_required
 def select_coach():

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}FitPro – Paramètres{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="page-container" style="max-width:780px;">
+
+    <div class="page-header">
+      <h1>⚙️ Paramètres</h1>
+      <p style="color:var(--muted);">Gérez votre compte et votre abonnement</p>
+    </div>
+
+    <!-- ── Profil ─────────────────────────────────────────────── -->
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#ff2d9b,#8b2fff);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:#fff;flex-shrink:0;">
+          {{ user.name[0]|upper }}
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:1.05rem;">{{ user.name }}</div>
+          <div style="color:var(--muted);font-size:.82rem;">{{ user.email }}</div>
+        </div>
+        {% if user.subscription == 'premium' %}
+        <span style="margin-left:auto;background:linear-gradient(135deg,#ff2d9b,#8b2fff);color:#fff;padding:4px 14px;border-radius:50px;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⭐ PREMIUM</span>
+        {% else %}
+        <span style="margin-left:auto;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--muted);padding:4px 14px;border-radius:50px;font-size:.7rem;font-weight:700;text-transform:uppercase;white-space:nowrap;">FREE</span>
+        {% endif %}
+      </div>
+
+      <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">✏️ Modifier mes informations</h3>
+
+      <div id="profileSuccess" class="success-msg hidden" style="margin-bottom:16px;">✅ Profil mis à jour !</div>
+      <div id="profileError" class="error-msg hidden"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group" style="margin:0;">
+          <label>Prénom / Pseudo</label>
+          <input type="text" id="settingsName" value="{{ user.name }}" placeholder="Ton prénom">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>Email</label>
+          <input type="email" id="settingsEmail" value="{{ user.email }}" placeholder="ton@email.com">
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">🔑 Changer le mot de passe</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group" style="margin:0;">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="settingsPassword" placeholder="Laisser vide pour ne pas changer">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>Confirmer le mot de passe</label>
+            <input type="password" id="settingsPasswordConfirm" placeholder="••••••">
+          </div>
+        </div>
+      </div>
+
+      <button onclick="saveProfile()" class="btn-primary" style="margin-top:20px;">Enregistrer les modifications</button>
+    </div>
+
+    <!-- ── Abonnement ─────────────────────────────────────────── -->
+    <div class="card" style="margin-bottom:20px;">
+      <h3 style="font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px;">💳 Mon abonnement</h3>
+
+      {% if user.subscription == 'premium' %}
+      <div style="background:linear-gradient(135deg,rgba(255,45,155,.06),rgba(139,47,255,.04));border:1px solid rgba(255,45,155,.2);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">⭐ FitPro Premium</div>
+            <div style="color:var(--muted);font-size:.82rem;">14,90 € / mois · Accès complet à toutes les fonctionnalités</div>
+          </div>
+          <span style="background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.25);color:#00e5a0;padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">● Actif</span>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,.06);margin-top:16px;padding-top:16px;">
+          <div style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">
+            Ton abonnement se renouvelle automatiquement. En annulant, tu perdras l'accès à la semaine 2, 3 &amp; 4 du programme ainsi qu'au plan nutrition.
+          </div>
+          <button onclick="showCancelConfirm()" class="btn-ghost" style="border-color:rgba(255,107,107,.3);color:#ff6b6b;font-size:.82rem;">
+            🚫 Annuler mon abonnement
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmation annulation -->
+      <div id="cancelConfirm" style="display:none;background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.25);border-radius:var(--radius);padding:20px 22px;">
+        <div style="font-weight:800;margin-bottom:8px;color:#ff8f8f;">⚠️ Confirmer l'annulation</div>
+        <p style="font-size:.875rem;color:var(--muted);margin-bottom:16px;">Tu vas perdre l'accès Premium immédiatement. Cette action est irréversible (tu pourras te réabonner à tout moment).</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="cancelSubscription()" class="btn-primary" style="background:linear-gradient(135deg,#c0392b,#e74c3c);box-shadow:none;font-size:.82rem;" id="cancelBtn">
+            Oui, annuler mon abonnement
+          </button>
+          <button onclick="hideCancelConfirm()" class="btn-ghost" style="font-size:.82rem;">Garder Premium</button>
+        </div>
+      </div>
+
+      {% else %}
+      <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">Plan Gratuit</div>
+            <div style="color:var(--muted);font-size:.82rem;">Semaine 1 débloquée · Nutrition verrouillée</div>
+          </div>
+          <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--muted);padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Free</span>
+        </div>
+      </div>
+      <a href="/pricing" class="fz-btn-primary" style="display:inline-block;">🚀 Passer Premium · 14,90€/mois</a>
+      {% endif %}
+    </div>
+
+    <!-- ── Danger zone ─────────────────────────────────────────── -->
+    <div class="card" style="border-color:rgba(255,107,107,.15);">
+      <h3 style="font-size:.75rem;font-weight:800;color:#ff6b6b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">⚠️ Zone dangereuse</h3>
+      <p style="font-size:.875rem;color:var(--muted);margin-bottom:16px;">Supprimer définitivement ton compte et toutes tes données (progression, profil, abonnement).</p>
+      <button onclick="showDeleteConfirm()" class="btn-ghost" style="border-color:rgba(255,107,107,.3);color:#ff6b6b;font-size:.82rem;">🗑️ Supprimer mon compte</button>
+
+      <div id="deleteConfirm" style="display:none;margin-top:16px;background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.25);border-radius:var(--radius);padding:16px 18px;">
+        <div style="font-weight:800;margin-bottom:8px;color:#ff8f8f;">Suppression irréversible</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Tape <strong style="color:#e8eaf6;">SUPPRIMER</strong> pour confirmer.</p>
+        <input type="text" id="deleteConfirmInput" placeholder="SUPPRIMER" style="margin-bottom:12px;width:100%;max-width:240px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="deleteAccount()" class="btn-primary" style="background:linear-gradient(135deg,#7b1a1a,#c0392b);box-shadow:none;font-size:.82rem;">Supprimer définitivement</button>
+          <button onclick="document.getElementById('deleteConfirm').style.display='none'" class="btn-ghost" style="font-size:.82rem;">Annuler</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function saveProfile() {
+  const name = document.getElementById('settingsName').value.trim();
+  const email = document.getElementById('settingsEmail').value.trim();
+  const password = document.getElementById('settingsPassword').value;
+  const confirm = document.getElementById('settingsPasswordConfirm').value;
+
+  const errEl = document.getElementById('profileError');
+  const okEl = document.getElementById('profileSuccess');
+  errEl.classList.add('hidden'); okEl.classList.add('hidden');
+
+  if (!name || !email) { errEl.textContent = 'Nom et email requis.'; errEl.classList.remove('hidden'); return; }
+  if (password && password !== confirm) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; errEl.classList.remove('hidden'); return; }
+  if (password && password.length < 6) { errEl.textContent = 'Mot de passe trop court (6 caractères min).'; errEl.classList.remove('hidden'); return; }
+
+  const r = await fetch('/api/update-account', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name, email, password: password || null })
+  });
+  const d = await r.json();
+  if (d.error) { errEl.textContent = d.error; errEl.classList.remove('hidden'); }
+  else {
+    okEl.classList.remove('hidden');
+    document.getElementById('settingsPassword').value = '';
+    document.getElementById('settingsPasswordConfirm').value = '';
+  }
+}
+
+function showCancelConfirm() { document.getElementById('cancelConfirm').style.display = 'block'; }
+function hideCancelConfirm() { document.getElementById('cancelConfirm').style.display = 'none'; }
+
+async function cancelSubscription() {
+  const btn = document.getElementById('cancelBtn');
+  btn.disabled = true; btn.textContent = 'Annulation en cours…';
+  const r = await fetch('/api/cancel-subscription', { method: 'POST' });
+  const d = await r.json();
+  if (d.error) { showToast(d.error, 'error'); btn.disabled = false; btn.textContent = 'Oui, annuler mon abonnement'; }
+  else { showToast('Abonnement annulé.', 'success'); setTimeout(() => location.reload(), 1500); }
+}
+
+function showDeleteConfirm() { document.getElementById('deleteConfirm').style.display = 'block'; }
+
+async function deleteAccount() {
+  const val = document.getElementById('deleteConfirmInput').value.trim();
+  if (val !== 'SUPPRIMER') { showToast('Tape exactement "SUPPRIMER" pour confirmer.', 'error'); return; }
+  const r = await fetch('/api/delete-account', { method: 'POST' });
+  const d = await r.json();
+  if (d.error) showToast(d.error, 'error');
+  else { showToast('Compte supprimé.', 'success'); setTimeout(() => window.location.href = '/', 1500); }
+}
+</script>
+{% endblock %}

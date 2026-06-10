@@ -22,6 +22,7 @@
         <a href="/nutrition" class="nav-link" onclick="closeMenu()">Nutrition{% if session.get('user_email') %}<span id="navNutBadge"></span>{% endif %}</a>
         <a href="/coaches" class="nav-link" onclick="closeMenu()" style="color:#ff2d9b;position:relative;">Coaches <span style="position:absolute;top:-4px;right:-6px;width:7px;height:7px;background:#ff2d9b;border-radius:50%;animation:pulse-dot 1.5s infinite;"></span></a>
         <a href="/progress" class="nav-link" onclick="closeMenu()">Progrès</a>
+        <a href="/settings" class="nav-link" onclick="closeMenu()" style="display:flex;align-items:center;gap:5px;">⚙️ <span>Paramètres</span></a>
         <button onclick="logout()" class="btn-ghost">Déconnexion</button>
       {% else %}
         <a href="/pricing" class="nav-link" onclick="closeMenu()">Tarifs</a>
