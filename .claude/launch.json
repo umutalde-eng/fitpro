@@ -5,8 +5,7 @@
       "name": "fitpro",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["app.py"],
-      "port": 5001,
-      "cwd": "/Users/aldedeumut/Desktop/demo/fitpro"
+      "port": 5001
     }
   ]
 }
