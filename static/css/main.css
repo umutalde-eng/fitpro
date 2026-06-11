@@ -96,6 +96,7 @@ input, textarea, select { font-family: inherit; }
   text-transform: uppercase; letter-spacing: .05em;
 }
 .nav-link:hover { color: #fff; background: rgba(255,255,255,.06); }
+.nav-link.active { color: #ff2d9b; background: rgba(255,45,155,.08); }
 /* Hamburger button */
 .nav-toggle {
   display: none;

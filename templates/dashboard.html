@@ -181,26 +181,52 @@ async function loadStats() {
   document.getElementById('statWeight').textContent = wc > 0 ? '+' + wc : (wc || '–');
 }
 async function loadNextSession() {
-  const r = await fetch('/api/get-program');
+  const [r, rp] = await Promise.all([fetch('/api/get-program'), fetch('/api/get-progress')]);
+  const prog = rp.ok ? await rp.json() : { sessions: [] };
+  loadWeekDays(prog.sessions || []);
   if (!r.ok) { document.getElementById('nextSession').innerHTML = '<a href="/onboarding" class="btn-outline">Créer mon programme</a>'; return; }
   const d = await r.json();
-  const day = d.workout?.weeks?.[0]?.days?.[0];
-  if (day) {
+  const done = new Set((prog.sessions || []).map(s => `${s.week}|${s.day}`));
+
+  // Première séance pas encore complétée
+  let next = null, nextWeek = null;
+  outer:
+  for (const w of (d.workout?.weeks || [])) {
+    for (const day of w.days) {
+      if (!done.has(`${w.week}|${day.day}`)) { next = day; nextWeek = w.week; break outer; }
+    }
+  }
+  if (next) {
     document.getElementById('nextSession').innerHTML = `
-      <div style="font-size:1.1rem;font-weight:900;margin-bottom:6px;font-style:italic;text-transform:uppercase;">${day.day} – ${day.type}</div>
-      <div style="color:var(--muted);font-size:.85rem;margin-bottom:18px;">⏱ ${day.duration} &nbsp;·&nbsp; ${day.exercises.length} exercices</div>
+      <div style="font-size:.7rem;font-weight:800;color:#ff2d9b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Semaine ${nextWeek}</div>
+      <div style="font-size:1.1rem;font-weight:900;margin-bottom:6px;font-style:italic;text-transform:uppercase;">${next.day} – ${next.type}</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:18px;">⏱ ${next.duration} &nbsp;·&nbsp; ${next.exercises.length} exercices</div>
       <a href="/program" class="btn-green" style="font-size:.875rem;">C'est parti ! →</a>`;
+  } else if (d.workout) {
+    document.getElementById('nextSession').innerHTML = `
+      <div style="font-size:1.6rem;margin-bottom:8px;">🏆</div>
+      <div style="font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:6px;">Programme terminé !</div>
+      <div style="color:var(--muted);font-size:.85rem;">Toutes tes séances disponibles sont complétées. Bravo !</div>`;
   }
 }
-function loadWeekDays() {
+function loadWeekDays(sessions) {
   const days = ['L','M','M','J','V','S','D'];
   const container = document.getElementById('weekDays');
-  const today = new Date().getDay();
+  container.innerHTML = '';
+  const now = new Date();
+  const todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const monday = new Date(now); monday.setDate(now.getDate() - todayIdx); monday.setHours(0,0,0,0);
+  const doneIdx = new Set();
+  sessions.forEach(s => {
+    const d = new Date(s.date);
+    if (d >= monday) doneIdx.add(d.getDay() === 0 ? 6 : d.getDay() - 1);
+  });
   days.forEach((d, i) => {
-    const isToday = (i === (today === 0 ? 6 : today - 1));
+    const isToday = i === todayIdx;
+    const isDone = doneIdx.has(i);
     const div = document.createElement('div');
-    div.className = 'day-pill' + (isToday ? ' today' : '');
-    div.innerHTML = `<span>${d}</span><span style="font-size:1rem;">${isToday ? '📍' : '·'}</span>`;
+    div.className = 'day-pill' + (isDone ? ' done' : (isToday ? ' today' : ''));
+    div.innerHTML = `<span>${d}</span><span style="font-size:1rem;">${isDone ? '✓' : (isToday ? '📍' : '·')}</span>`;
     container.appendChild(div);
   });
 }
@@ -212,6 +238,6 @@ async function saveProgress() {
   closeModal('progressModal');
   loadStats();
 }
-loadStats(); loadNextSession(); loadWeekDays();
+loadStats(); loadNextSession();
 </script>
 {% endblock %}

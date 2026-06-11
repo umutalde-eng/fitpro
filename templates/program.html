@@ -27,11 +27,14 @@
 <script>
 let programData = null;
 let activeWeek = 0;
+let doneSessions = new Set();
 
 async function loadProgram() {
-  const r = await fetch('/api/get-program');
+  const [r, rp] = await Promise.all([fetch('/api/get-program'), fetch('/api/get-progress')]);
   if (!r.ok) { window.location.href = '/onboarding'; return; }
   programData = await r.json();
+  const prog = await rp.json();
+  (prog.sessions || []).forEach(s => doneSessions.add(`${s.week}|${s.day}`));
   document.getElementById('programSubtitle').textContent = programData.workout.name;
   renderTabs();
   renderWeek(0);
@@ -72,9 +75,19 @@ function renderWeek(i) {
   const week = programData.workout.weeks[i];
   if (!week) { content.innerHTML = renderLockBlock(); return; }
 
+  const doneCount = week.days.filter(d => doneSessions.has(`${week.week}|${d.day}`)).length;
+  const pct = Math.round((doneCount / week.days.length) * 100);
   let html = `<div style="margin-bottom:20px;padding:16px 22px;background:rgba(255,45,155,.05);border-radius:var(--radius);border:1px solid rgba(255,45,155,.15);">
-    <strong style="font-style:italic;text-transform:uppercase;font-size:.95rem;">Semaine ${week.week} : ${week.theme}</strong>
-    <span style="color:var(--muted);font-size:.8rem;margin-left:12px;">${week.days.length} séances prévues</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <strong style="font-style:italic;text-transform:uppercase;font-size:.95rem;">Semaine ${week.week} : ${week.theme}</strong>
+        <span style="color:var(--muted);font-size:.8rem;margin-left:12px;">${doneCount}/${week.days.length} séances faites</span>
+      </div>
+      ${pct === 100 ? '<span style="color:#00e5a0;font-weight:800;font-size:.8rem;">🏆 Semaine complétée !</span>' : ''}
+    </div>
+    <div style="margin-top:12px;height:6px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden;">
+      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#ff2d9b,#8b2fff);border-radius:10px;transition:width .5s;"></div>
+    </div>
   </div>`;
 
   week.days.forEach((day, di) => {
@@ -92,8 +105,10 @@ function renderWeek(i) {
         </div>
         <div class="session-meta">
           <span style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:4px 12px;border-radius:50px;font-size:.72rem;font-weight:700;color:${col};">${day.exercises.length} exercices</span>
-          <button onclick="event.stopPropagation();logSession(${week.week},'${day.day}','${day.type}')"
-            class="btn-green" style="padding:6px 14px;font-size:.78rem;">✓ Fait</button>
+          ${doneSessions.has(`${week.week}|${day.day}`)
+            ? `<span style="background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:#00e5a0;padding:6px 14px;border-radius:50px;font-size:.78rem;font-weight:800;">✓ Terminée</span>`
+            : `<button onclick="event.stopPropagation();logSession(${week.week},'${day.day}','${day.type}',this)"
+            class="btn-green" style="padding:6px 14px;font-size:.78rem;">✓ Fait</button>`}
           <span style="color:var(--muted);font-size:1rem;" id="arrow-${i}-${di}">▼</span>
         </div>
       </div>
@@ -134,12 +149,14 @@ function showLockMessage() {
   showToast('Passe en Premium pour débloquer cette semaine 🔒', 'error');
 }
 
-async function logSession(week, day, type) {
+async function logSession(week, day, type, btn) {
   await fetch('/api/log-session', {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({week, day, type, completed: true})
   });
+  doneSessions.add(`${week}|${day}`);
   showToast('Séance enregistrée ! 🎉', 'success');
+  renderWeek(activeWeek);
 }
 
 loadProgram();

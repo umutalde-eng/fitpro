@@ -80,6 +80,11 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// ─── Lien actif dans la navbar ──────────────────────────────────────────────────
+document.querySelectorAll('.nav-link').forEach(link => {
+  if (link.getAttribute('href') === window.location.pathname) link.classList.add('active');
+});
+
 // ─── Success param ──────────────────────────────────────────────────────────────
 const params = new URLSearchParams(window.location.search);
 if (params.get('success') === '1') {

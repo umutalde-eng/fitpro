@@ -80,6 +80,37 @@ async function loadProgress() {
   document.getElementById('pCurrentWeek').textContent = 'S' + stats.current_week;
 }
 
+async function loadHistory() {
+  const r = await fetch('/api/get-progress');
+  const d = await r.json();
+
+  // Weight history → chart
+  (d.progress || []).forEach(entry => {
+    if (!entry.weight) return;
+    labels.push(new Date(entry.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'}));
+    weights.push(parseFloat(entry.weight));
+  });
+  if (weights.length) renderChart();
+
+  // Session history → list
+  const sessions = (d.sessions || []).slice().reverse();
+  if (sessions.length) {
+    const container = document.getElementById('sessionHistory');
+    container.style.cssText = 'padding:0;text-align:left;';
+    container.innerHTML = sessions.map(s => {
+      const date = new Date(s.date).toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'});
+      return `<div style="display:flex;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid rgba(255,255,255,.05);">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.25);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;">✓</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:.875rem;">${s.day || ''} – ${s.type || 'Séance'}</div>
+          <div style="color:var(--muted);font-size:.75rem;margin-top:2px;">Semaine ${s.week || '?'}</div>
+        </div>
+        <div style="color:var(--muted);font-size:.75rem;white-space:nowrap;">${date}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
 async function addProgress() {
   const weight = document.getElementById('apWeight').value;
   const note = document.getElementById('apNote').value;
@@ -102,7 +133,10 @@ function updateChart(newWeight) {
   const now = new Date();
   labels.push(now.toLocaleDateString('fr-FR', {day:'numeric', month:'short'}));
   weights.push(parseFloat(newWeight));
+  renderChart();
+}
 
+function renderChart() {
   document.getElementById('noWeightData').style.display = 'none';
   document.getElementById('weightChart').style.display = 'block';
 
@@ -141,5 +175,6 @@ function updateChart(newWeight) {
 }
 
 loadProgress();
+loadHistory();
 </script>
 {% endblock %}

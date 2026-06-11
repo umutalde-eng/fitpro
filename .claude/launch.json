@@ -4,7 +4,7 @@
     {
       "name": "fitpro",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["app.py"],
+      "runtimeArgs": ["/Users/aldedeumut/Desktop/demo/fitpro/app.py"],
       "port": 5001,
       "autoPort": false
     }

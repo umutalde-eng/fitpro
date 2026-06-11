@@ -340,6 +340,15 @@ def save_progress():
     save_users(users)
     return jsonify({"success": True})
 
+@app.route("/api/get-progress")
+@login_required
+def get_progress():
+    user = get_current_user()
+    return jsonify({
+        "progress": user.get("progress", []),
+        "sessions": user.get("sessions_done", [])
+    })
+
 @app.route("/api/get-stats")
 @login_required
 def get_stats():
